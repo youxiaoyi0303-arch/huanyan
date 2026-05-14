@@ -271,25 +271,20 @@ footer{text-align:center;padding:56px 48px;color:var(--textM);font-size:13px;bor
 <div class="toast" id="toast"></div>
 
 <script>
-// 异步加载大型库文件，不阻塞页面
-function loadScript(src){return new Promise(function(resolve,reject){var s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s);});}
-
-var faceApiReady=false;
-var pdfReady=false;
-
-// 页面立即可用，库后台加载
-loadScript('face-api.min.js').then(function(){
-  faceApiReady=true;
-  return loadModels();
-}).catch(function(e){console.log('face-api 加载失败:',e);});
-
-loadScript('jspdf.min.js').then(function(){
-  return loadScript('html2canvas.min.js');
-}).then(function(){
-  pdfReady=true;
-}).catch(function(e){console.log('PDF库加载失败:',e);});
+// 按需加载器
+var _libs={};
+function needLib(name,src,cb){
+  if(_libs[name]==='ok'){cb();return;}
+  if(_libs[name]==='loading'){setTimeout(function(){needLib(name,src,cb)},200);return;}
+  _libs[name]='loading';
+  var s=document.createElement('script');s.src=src;
+  s.onload=function(){_libs[name]='ok';cb();};
+  s.onerror=function(){showToast('⚠️ 网络不稳定，请刷新重试');};
+  document.head.appendChild(s);
+}
 </script>
-<script>// ===== Face-API 模型加载 =====
+<script>
+// ===== Face-API 模型加载 =====
 const MODEL_URL = './models/';
 let modelsLoaded = false;
 let uploadedImage = null;
@@ -324,10 +319,14 @@ zone.addEventListener('drop',e=>{
 async function handleFile(e){
   const file = e.target.files[0];
   if(!file) return;
-  if(!faceApiReady){showToast('⏳ AI 引擎加载中，请稍后再试...');return;}
-  showToast('⏳ 加载 AI 模型...');
-  await loadModels();
-  
+  showToast('⏳ 加载 AI 引擎...');
+  needLib('faceapi','face-api.min.js',async function(){
+    await loadModels();
+    doHandleFile(file);
+  });
+}
+
+async function doHandleFile(file){
   const reader = new FileReader();
   reader.onload = async function(ev){
     uploadedImage = new Image();
@@ -614,6 +613,13 @@ function showToast(m){const t=document.getElementById('toast');t.textContent=m;t
 // PDF
 async function generatePDF(){
   showToast('📄 生成中...');
+  needLib('pdf','jspdf.min.js',function(){
+    needLib('h2c','html2canvas.min.js',async function(){
+      await doGeneratePDF();
+    });
+  });
+}
+async function doGeneratePDF(){
   try {
     if(!window.html2canvas||!window.jspdf){throw new Error('库未加载');}
     const {jsPDF}=window.jspdf;
