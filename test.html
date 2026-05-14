@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>焕颜测试</title>
+<style>
+body{font-family:sans-serif;background:#F9F5F0;padding:40px;text-align:center}
+.tabs{display:flex;gap:8px;justify-content:center;margin:20px 0}
+.tab{padding:10px 20px;border-radius:20px;border:1px solid #ccc;cursor:pointer;background:#fff}
+.tab.active{background:#B87070;color:#fff}
+.tab-content{display:none;margin-top:20px;padding:20px;background:#fff;border-radius:12px}
+.tab-content.active{display:block}
+</style>
+</head>
+<body>
+<h2>焕颜 - 知识库测试</h2>
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('test1')">知识1</button>
+  <button class="tab" onclick="switchTab('test2')">知识2</button>
+  <button class="tab" onclick="switchTab('test3')">知识3</button>
+</div>
+<div class="tab-content active" id="tab-test1"><p>知识1内容 ✅</p></div>
+<div class="tab-content" id="tab-test2"><p>知识2内容 ✅</p></div>
+<div class="tab-content" id="tab-test3"><p>知识3内容 ✅</p></div>
+<hr>
+<input type="file" accept="image/*" onchange="alert('上传成功！文件: '+this.files[0].name)">
+<p>👆 上传测试（无需AI）</p>
+<div id="status" style="margin-top:20px;color:green"></div>
+<script>
+document.getElementById('status').textContent='JS 执行正常 ✅';
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  // Find and activate the button
+  var btns=document.querySelectorAll('.tab');
+  for(var i=0;i<btns.length;i++){
+    if(btns[i].getAttribute('onclick')&&btns[i].getAttribute('onclick').indexOf(name)!==-1){
+      btns[i].classList.add('active');
+    }
+  }
+}
+</script>
+</body>
+</html>
