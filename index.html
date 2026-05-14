@@ -581,16 +581,14 @@ function getDefaultProblems(){ return getDetectedProblems(); }
 function switchTab(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  // 找到对应的 tab 按钮并激活
-  document.querySelectorAll('.tab').forEach(t=>{
-    if(t.textContent.includes(document.getElementById('tab-'+name).querySelector('h4')?.textContent||'')||
-       t.getAttribute('onclick')?.includes(name)){t.classList.add('active')}
-  });
-  // 备用：直接用 onclick 属性匹配
-  const tabs=document.querySelectorAll('.tab');
-  for(const t of tabs){
-    if(t.getAttribute('onclick')?.includes("'"+name+"'")){t.classList.add('active');break}
+  var content=document.getElementById('tab-'+name);
+  if(content)content.classList.add('active');
+  // 激活对应标签按钮
+  var btns=document.querySelectorAll('.tab');
+  for(var i=0;i<btns.length;i++){
+    if(btns[i].getAttribute('onclick')&&btns[i].getAttribute('onclick').indexOf(name)!==-1){
+      btns[i].classList.add('active');
+    }
   }
 }
 
