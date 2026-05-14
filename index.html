@@ -541,9 +541,12 @@ async function generatePDF(){
     // 照片
     h+=getPhotoThumbs();
 
-    // 分析报告（克隆 results 的内容）
+    // 分析报告（克隆 results 的内容，去掉下载按钮和免责声明）
     var results=document.getElementById('results');
-    h+='<div style="margin-top:20px">'+results.innerHTML+'</div>';
+    var rh=results.innerHTML;
+    rh=rh.replace(/<div style="text-align:center;margin:20px 0"><button[^]*?<\/button><\/div>/,'');
+    rh=rh.replace(/<div class="disclaimer">[^]*?<\/div>/,'');
+    h+='<div style="margin-top:20px">'+rh+'</div>';
 
     // 分隔 + 瑜伽知识库
     var yoga=document.getElementById('tab-yoga');
