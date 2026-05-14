@@ -308,22 +308,11 @@ function drawAnnotated(d){
 
 function drawImproved(d){
   var c=document.getElementById('c3');var s=Math.min((c.parentElement.clientWidth-4)/uploadedImage.width,1);c.width=uploadedImage.width*s;c.height=uploadedImage.height*s;var ctx=c.getContext('2d');
-  // 去饱和显示原图
-  ctx.filter='saturate(0.35) brightness(1.05)';
+  // 美容滤镜：提亮 + 柔化 + 饱满肤色
+  ctx.filter='brightness(1.1) contrast(0.95) saturate(1.08) blur(0.4px)';
   ctx.drawImage(uploadedImage,0,0,c.width,c.height);ctx.filter='none';
-  // 柔光渐变覆盖
-  var grd=ctx.createRadialGradient(c.width/2,c.height/2,c.width*0.05,c.width/2,c.height/2,c.width*0.7);
-  grd.addColorStop(0,'rgba(255,240,230,0.25)');grd.addColorStop(0.6,'rgba(255,240,230,0.06)');grd.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=grd;ctx.fillRect(0,0,c.width,c.height);
-  // 文字注释
-  var fs=Math.max(11,c.width*0.035);ctx.font=fs+'px -apple-system,sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  var tx='改善效果：面部瑜伽 4-8 周后可逐渐显现';
-  var tw=ctx.measureText(tx).width,th=fs*2.2;
-  var bx=c.width/2-tw/2-14,by=c.height/2-th/2-4;
-  ctx.fillStyle='rgba(0,0,0,0.45)';ctx.beginPath();ctx.roundRect(bx,by,tw+28,th+8,10);ctx.fill();
-  ctx.fillStyle='#fff';ctx.fillText(tx,c.width/2,c.height/2);
-  ctx.textAlign='start';ctx.textBaseline='alphabetic';
+  // 叠回原图35%保留眉眼唇细节
+  ctx.globalAlpha=0.35;ctx.drawImage(uploadedImage,0,0,c.width,c.height);ctx.globalAlpha=1;
 }
 
 async function handleFile(e){
@@ -527,9 +516,9 @@ async function generatePDF(){
     }
     var {jsPDF}=window.jspdf;var doc=new jsPDF({unit:'mm',format:'a4'});
     var pw=190,ph=277;
+    // 在 results 顶部插入照片缩略图（临时）
     var results=document.getElementById('results');
     if(results.style.display==='none'){showToast('⚠️ 请先完成分析');return;}
-    // 在 results 顶部插入照片缩略图（临时）
     var thumbHTML='';
     if(uploadedImage){
       var thumbW=160,thumbH=Math.round(thumbW*uploadedImage.height/uploadedImage.width);
@@ -541,33 +530,47 @@ async function generatePDF(){
       if(window.faceDetection){
         var lm=window.faceDetection.landmarks.positions;
         var scX=thumbW/uploadedImage.width,scY=thumbH/uploadedImage.height;
-        lm.forEach(function(p){actx.fillStyle='#E05555';actx.beginPath();actx.arc(p.x*scX,p.y*scY,3,0,Math.PI*2);actx.fill();actx.strokeStyle='#fff';actx.lineWidth=1;actx.stroke();});
+        lm.forEach(function(p){actx.fillStyle='#E05555';actx.beginPath();actx.arc(p.x*scX,p.y*scY,2,0,Math.PI*2);actx.fill();actx.strokeStyle='#fff';actx.lineWidth=0.5;actx.stroke();});
       }
       var annoSrc=ac.toDataURL('image/jpeg',0.85);
-      thumbHTML='<div style="display:flex;gap:12px;justify-content:center;margin-bottom:16px;flex-wrap:wrap">'+
-        '<div style="text-align:center"><img src="'+origSrc+'" style="max-width:150px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1)"><div style="font-size:11px;color:#6B5E5E;margin-top:4px">📷 原图</div></div>'+
-        '<div style="text-align:center"><img src="'+annoSrc+'" style="max-width:150px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1)"><div style="font-size:11px;color:#6B5E5E;margin-top:4px">🔍 问题标注</div></div>'+
+      thumbHTML='<div style="display:flex;gap:12px;justify-content:center;margin-bottom:1em;flex-wrap:wrap">'+
+        '<div style="text-align:center"><img src="'+origSrc+'" style="max-width:150px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1)"><div style="font-size:11px;color:#6B5E5E">📷 原图</div></div>'+
+        '<div style="text-align:center"><img src="'+annoSrc+'" style="max-width:150px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1)"><div style="font-size:11px;color:#6B5E5E">🔍 问题标注</div></div>'+
         '</div>';
     }
     var origHTML=results.innerHTML;
     results.innerHTML=thumbHTML+origHTML;
-    // 截图 results
-    var canvas=await html2canvas(results,{scale:2,backgroundColor:'#F9F5F0',logging:false});
+    // 截图分析报告
+    var c1=await html2canvas(results,{scale:2,backgroundColor:'#F9F5F0',logging:false});
     results.innerHTML=origHTML;
-    // 计算分页
-    var iw=pw-10,ih=(canvas.height/canvas.width)*iw;
-    var y=5;
-    doc.setFontSize(16);doc.setTextColor(184,112,112);doc.text('✨ 焕颜 AI 面部分析报告',10,12);doc.setTextColor(45);
-    y=18;
-    var rem=ih;
-    while(rem>0){
-      var sliceH=Math.min(rem,ph-20);
-      if(y>18)doc.addPage();
-      doc.addImage(canvas.toDataURL('image/png'),'PNG',5,y,iw,ih,undefined,'FAST',0,y>18?(ih-rem):0);
-      rem-=sliceH;y=5;
+    // 截图瑜伽知识库
+    var yogaTab=document.getElementById('tab-yoga'),yogaCanvas=null;
+    if(yogaTab){
+      var wasHidden=yogaTab.style.display==='none';
+      if(wasHidden){yogaTab.style.display='block';yogaTab.classList.add('active');}
+      yogaCanvas=await html2canvas(yogaTab,{scale:2,backgroundColor:'#F9F5F0',logging:false});
+      if(wasHidden){yogaTab.style.display='none';yogaTab.classList.remove('active');}
     }
+    // 生成两页 PDF
+    [c1,yogaCanvas].forEach(function(canvas,idx){
+      if(!canvas)return;
+      var titles=['📋 面部分析报告 & AI综合总结','🧘 面部瑜伽知识库'];
+      var iw=pw-10,ih=(canvas.height/canvas.width)*iw;
+      var y=5;
+      doc.addPage();
+      doc.setFontSize(14);doc.setTextColor(184,112,112);doc.text(titles[idx],10,12);doc.setTextColor(45);
+      y=18;
+      var rem=ih;
+      while(rem>0){
+        var sliceH=Math.min(rem,ph-20);
+        if(y>18)doc.addPage();
+        doc.addImage(canvas.toDataURL('image/png'),'PNG',5,y,iw,ih,undefined,'FAST',0,y>18?(ih-rem):0);
+        rem-=sliceH;y=5;
+      }
+    });
+    doc.deletePage(1); // 删掉初始空白页
     doc.save('焕颜_全面分析报告.pdf');
-    showToast('✅ PDF 已下载（含照片缩略图+完整报告）');
+    showToast('✅ PDF 已下载（含分析报告+瑜伽知识库）');
   }catch(e){showToast('❌ '+e.message);}
 }
 </script>
