@@ -6,9 +6,9 @@
 <title>焕颜 — 您的私人面部衰老分析专家</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
-:root{
   --cream:#FAF7F2;--warm:#FFFBF5;--rose:#D4A0A0;--roseD:#B87070;--roseL:#F0DEDE;
   --gold:#C9A96E;--goldL:#E8D5B0;--text:#2D2424;--textL:#6B5E5E;--textM:#9B8E8E;
   --border:#E8DDD5;--card:#FFF;--shadow:0 2px 24px rgba(45,36,36,.06);
@@ -209,11 +209,6 @@ footer{text-align:center;padding:50px 40px;color:var(--textM);font-size:12px;bor
 <div class="knowledge-card"><div class="card-body"><h4>自体脂肪填充</h4><p>💰10000-30000元|⏱长期|🎯全面容积恢复。自己的脂肪无排异，需抽脂手术。</p></div></div>
   </div></div>
   <div class="tab-content" id="tab-yoga"><div class="knowledge-grid">
-<div class="knowledge-card"><div class="card-body"><h4>👐 全脸温热按压</h4><p>⏱3分钟 🕐每晚 🎯全脸筋膜+淋巴<br>双手搓热→用掌心分别按压额头/眼周/面颊/下颌各15秒→重复2遍。温热促进循环，筋膜放松，助眠。 <span style="font-size:10px;color:var(--textM)">📅 05/14更新</span></p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🧏 下颌关节放松</h4><p>⏱2分钟 🕐随时 🎯咬肌+颞下颌关节<br>双手掌根按住咬肌→张嘴到最大→缓慢闭合约10秒→重复5次。放松咬肌，改善国字脸和大小脸。 <span style="font-size:10px;color:var(--textM)">📅 05/14更新</span></p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🧘 额肌放松按摩</h4><p>⏱2分钟 🕐早晚 🎯额肌+皮肤层<br>双手食指从眉心向发际线交替推压→到达发际线后轻叩10次→从额头中央向两侧太阳穴打圈按摩30秒。改善抬头纹，放松紧张额肌。 <span style="font-size:10px;color:var(--textM)">📅 05/14更新</span></p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🪷 眉心舒展冥想</h4><p>⏱3分钟 🕐随时 🎯降眉肌+皱眉肌<br>闭上眼睛→有意识地彻底放松眉心→想象眉间被温柔展开→配合深缓呼吸→保持1-2分钟。减少不自觉皱眉，预防川字纹。 <span style="font-size:10px;color:var(--textM)">📅 05/14更新</span></p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🦴 颧骨按摩提升</h4><p>⏱3分钟 🕐每日2次 🎯颧大肌+颧小肌+SMAS<br>找到颧骨最高点→用掌根从颧骨向太阳穴45°推压→到达太阳穴后打圈按摩10秒→重复8次。提升苹果肌，改善中面部下垂。 <span style="font-size:10px;color:var(--textM)">📅 05/14更新</span></p></div></div>
 <div class="knowledge-card"><img src="images/2026-04-21-05-face-yoga-poses.jpg" onerror="this.style.display='none'"><div class="card-body"><h4>🧘 法令纹提拉</h4><p>⏱3分钟 🕐早晚 🎯SMAS筋膜+颧脂肪垫 📅4-8周<br>V型指从鼻翼沿法令纹向耳根提拉→压耳垂3秒→重复10次。只向上提！</p></div></div>
 <div class="knowledge-card"><img src="images/2026-04-08-03-face-yoga-guide.jpg" onerror="this.style.display='none'"><div class="card-body"><h4>👁 眼周放松</h4><p>⏱2-3分钟 🕐早晚 🎯眼轮匝肌+皮肤层<br>无名指点涂眼霜→从内向外轻点→眼尾打圈30秒→向太阳穴提5次。</p></div></div>
 <div class="knowledge-card"><img src="images/2026-04-21-03-face-fascia.jpg" onerror="this.style.display='none'"><div class="card-body"><h4>💆 下颌线提升</h4><p>⏱5分钟 🕐每日2-3次 🎯颈阔肌+下颌韧带<br>抬头看天花板→舌顶上颚→双手从下巴中央向耳根提拉→保持5秒→10次。</p></div></div>
@@ -230,7 +225,6 @@ footer{text-align:center;padding:50px 40px;color:var(--textM);font-size:12px;bor
 <div class="knowledge-card"><div class="card-body"><span class="tag">轮廓变形</span><h4>骨骼在缩水</h4><p>外轮廓不清晰·大小脸·双下巴·眼角下垂。40+骨骼年缩0.5%，深层驱动浅层改变。</p></div></div>
   </div></div>
   <div class="tab-content" id="tab-habits"><div class="knowledge-grid">
-<div class="knowledge-card"><div class="card-body"><h4>🪞 过度去角质</h4><p>频繁使用磨砂膏或强效酸类→破坏皮脂膜→屏障受损→敏感泛红。正常皮肤每周去角质1次即可，敏感肌每2周1次。 <span style="font-size:10px;color:var(--textM)">📅 05/14</span></p></div></div>
 <div class="knowledge-card"><div class="card-body"><h4>😴 侧睡压迫</h4><p>单侧睡6-8小时→法令纹/眼纹那一侧更深。枕头持续压迫→"睡眠纹"。建议仰卧+真丝枕套。</p></div></div>
 <div class="knowledge-card"><div class="card-body"><h4>📱 低头看手机</h4><p>低头60°颈椎承重27kg！长期→颈纹深+双下巴+下颌线糊。手机举到眼平齐，30分钟抬头活动。</p></div></div>
 <div class="knowledge-card"><div class="card-body"><h4>😠 下意识皱眉</h4><p>视力差不戴镜→眯眼→鱼尾纹。压力大不自觉皱眉→川字纹。每天几百次，几年就固定。</p></div></div>
@@ -572,37 +566,28 @@ function showToast(m){const t=document.getElementById('toast');t.textContent=m;t
 // PDF
 async function generatePDF(){
   showToast('📄 生成中...');
-  
-  // 截取报告内容区域为图片（完美渲染中文）
-  const el = document.getElementById('analysisSection');
-  const canvas = await html2canvas(el, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: '#FAF7F2',
-    logging: false
-  });
-  
-  // 将截图放入 PDF
-  const {jsPDF} = window.jspdf;
-  const imgData = canvas.toDataURL('image/png');
-  const pageW = 190, pageH = 277;
-  const imgW = pageW - 10;
-  const imgH = (canvas.height / canvas.width) * imgW;
-  
-  const doc = new jsPDF({unit: 'mm', format: 'a4'});
-  let y = 5;
-  let remainingH = imgH;
-  
-  while (remainingH > 0) {
-    if (y > 5) doc.addPage();
-    const sliceH = Math.min(remainingH, pageH - 15);
-    doc.addImage(imgData, 'PNG', 5, y, imgW, imgH, undefined, 'FAST', 0, y > 5 ? (imgH - remainingH) : 0);
-    remainingH -= sliceH;
-    y = 5;
+  try {
+    if(!window.html2canvas){throw new Error('html2canvas 未加载');}
+    if(!window.jspdf){throw new Error('jspdf 未加载');}
+    
+    const el = document.getElementById('analysisSection');
+    const canvas = await html2canvas(el, {scale:2,useCORS:true,backgroundColor:'#FAF7F2',logging:false});
+    
+    const {jsPDF} = window.jspdf;
+    const imgData = canvas.toDataURL('image/png');
+    const pageW=190,pageH=277,imgW=pageW-10,imgH=(canvas.height/canvas.width)*imgW;
+    const doc = new jsPDF({unit:'mm',format:'a4'});
+    let remainingH=imgH,y=5;
+    while(remainingH>0){
+      if(y>5)doc.addPage();
+      doc.addImage(imgData,'PNG',5,y,imgW,imgH,undefined,'FAST',0,y>5?(imgH-remainingH):0);
+      remainingH-=Math.min(remainingH,pageH-15);y=5;
+    }
+    doc.save('焕颜_面部衰老分析报告.pdf');
+    showToast('✅ PDF 已下载');
+  } catch(e) {
+    showToast('❌ ' + e.message);
   }
-  
-  doc.save('焕颜_面部衰老分析报告.pdf');
-  showToast('✅ PDF 已下载（中文正常）');
 }
 </script>
 </body>
