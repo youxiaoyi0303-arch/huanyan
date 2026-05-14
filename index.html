@@ -168,6 +168,11 @@ footer{text-align:center;padding:50px 40px;color:var(--textM);font-size:12px;bor
   <div id="analysisSection" style="display:none;margin-top:36px">
     <div style="text-align:center;margin-bottom:28px"><h2 style="font-family:'Noto Serif SC',serif;font-size:28px;font-weight:700;margin-bottom:6px">✨ 详细分析报告</h2><p style="color:var(--textM)">基于实际人脸检测 · 含改善方案</p></div>
     <div id="analysisResults"></div>
+    <div class="disclaimer"><strong>⚠️ 免责声明：</strong>本分析仅供美容参考，不构成医疗诊断或治疗建议。AI 检测存在误差，请以执业医师面诊为准。医美价格为市场参考。本报告不替代专业医学意见。</div>
+    <div id="aiSummary" style="background:var(--card);border-radius:var(--radius);padding:28px;margin:24px 0;box-shadow:var(--shadow);display:none">
+      <h3 style="font-family:'Noto Serif SC',serif;font-size:22px;font-weight:700;margin-bottom:16px;color:var(--roseD)">🤖 AI 综合总结</h3>
+      <div id="aiSummaryContent"></div>
+    </div>
     <div class="report-actions"><h4>📄 生成 PDF 报告</h4><p>含完整分析 + 医美方案 + 面部瑜伽</p><button class="btn btn-pdf" onclick="generatePDF()">📥 下载 PDF</button></div>
     <div class="disclaimer"><strong>⚠️ 免责声明：</strong>本分析仅供美容参考，不构成医疗诊断或治疗建议。AI 检测存在误差，请以执业医师面诊为准。医美价格为市场参考。本报告不替代专业医学意见。</div>
   </div>
@@ -185,12 +190,12 @@ footer{text-align:center;padding:50px 40px;color:var(--textM);font-size:12px;bor
     <button class="tab" onclick="switchTab('skincare')">💆 瑜伽护肤</button>
   </div>
   <div class="tab-content active" id="tab-anatomy"><div class="knowledge-grid">
-<div class="knowledge-card"><div class="card-body"><span class="tag">第1层</span><h4>皮肤层</h4><p>表皮如保鲜膜，真皮的胶原是"床垫海绵"。30岁后海绵年流失1%。紫外线穿透玻璃直达真皮层。</p></div></div>
-<div class="knowledge-card"><div class="card-body"><span class="tag">第2层</span><h4>SMAS筋膜层</h4><p>面部的"吊床网兜"。韧带松弛→法令纹变深、下颌线模糊、口角囊袋出现。</p></div></div>
-<div class="knowledge-card"><div class="card-body"><span class="tag">第3层</span><h4>肌肉层</h4><p>几十块小肌肉控制表情。反复收缩→动态纹。像反复折纸，折久留印。</p></div></div>
-<div class="knowledge-card"><div class="card-body"><span class="tag">第4层</span><h4>脂肪层</h4><p>脂肪垫如填充物。移位→苹果肌下滑、眼袋膨出、太阳穴萎缩。</p></div></div>
-<div class="knowledge-card"><div class="card-body"><span class="tag">第5层</span><h4>骨骼层</h4><p>40岁后骨年吸收0.5%。眼眶骨缩→眼窝凹；上颌骨缩→法令纹深；下颌骨变→双下巴。</p></div></div>
-<div class="knowledge-card"><div class="card-body"><span class="tag">五层联动</span><h4>衰老连锁反应</h4><p>骨吸收→地基塌→筋膜挂不住→脂肪下滑→皮肤起皱。深层决定浅层。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-21-03-face-fascia.jpg" onerror="this.style.display='none'"><div class="card-body"><span class="tag">第1层</span><h4>皮肤层</h4><p>表皮如保鲜膜，真皮的胶原是"床垫海绵"。30岁后海绵年流失1%。紫外线穿透玻璃直达真皮层。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-05-01-facial-muscles-anatomy.jpg" onerror="this.style.display='none'"><div class="card-body"><span class="tag">第2层</span><h4>SMAS筋膜层</h4><p>面部的"吊床网兜"。韧带松弛→法令纹变深、下颌线模糊、口角囊袋出现。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-21-01-face-muscles.jpg" onerror="this.style.display='none'"><div class="card-body"><span class="tag">第3层</span><h4>肌肉层</h4><p>几十块小肌肉控制表情。反复收缩→动态纹。像反复折纸，折久留印。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-08-01-facial-muscles-anatomy.jpg" onerror="this.style.display='none'"><div class="card-body"><span class="tag">第4层</span><h4>脂肪层</h4><p>脂肪垫如填充物。移位→苹果肌下滑、眼袋膨出、太阳穴萎缩。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-21-04-face-bones.jpg" onerror="this.style.display='none'"><div class="card-body"><span class="tag">第5层</span><h4>骨骼层</h4><p>40岁后骨年吸收0.5%。眼眶骨缩→眼窝凹；上颌骨缩→法令纹深；下颌骨变→双下巴。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-08-02-facial-muscles-labeled.jpg" onerror="this.style.display='none'"><div class="card-body"><span class="tag">五层联动</span><h4>衰老连锁反应</h4><p>骨吸收→地基塌→筋膜挂不住→脂肪下滑→皮肤起皱。深层决定浅层。</p></div></div>
   </div></div>
   <div class="tab-content" id="tab-aesthetics"><div class="knowledge-grid">
 <div class="knowledge-card"><div class="card-body"><h4>热玛吉</h4><p>💰15000-25000元|⏱1-2年|🎯全脸紧致。射频加热唤醒胶原。适合35+初老阶段。</p></div></div>
@@ -469,6 +474,35 @@ function renderResults(){
       </div>
     </div>
   `).join('');
+  
+  // 生成 AI 综合总结
+  const severe = problems.filter(p=>p.cls==='severe');
+  const moderate = problems.filter(p=>p.cls==='moderate');
+  const mild = problems.filter(p=>p.cls==='mild');
+  const sevNames = severe.map(p=>p.name).join('、')||'无';
+  const modNames = moderate.map(p=>p.name).join('、')||'无';
+  const allYoga = [...new Set(problems.flatMap(p=>p.yoga))].slice(0,5);
+  
+  const summary = `
+    <div style="font-size:15px;color:var(--text);line-height:2.2">
+      <p style="margin-bottom:18px">根据面部关键点检测结果，您在<strong style="color:var(--red)">${problems.length}</strong>个面部区域存在不同程度的衰老迹象。</p>
+      
+      <p style="margin-bottom:14px"><strong style="color:var(--roseD)">🔴 需重点关注：</strong>${sevNames}。以上问题处于重度阶段，建议优先采取医学美容手段（如${severe[0]?.treatments[0]?.n||'玻尿酸填充'}、${severe[0]?.treatments[1]?.n||'肉毒素注射'}等）进行干预，同时配合面部瑜伽巩固效果。</p>
+      
+      <p style="margin-bottom:14px"><strong style="color:var(--orange)">🟠 建议持续改善：</strong>${modNames}。中度问题通过坚持面部瑜伽+科学护肤可在4-8周看到改善，如持续无好转再考虑医美方案。</p>
+      
+      <p style="margin-bottom:18px"><strong style="color:var(--yellow)">🟡 早期预防：</strong>轻度问题主要是衰老前兆，现阶段以预防为主——调整日常习惯、坚持面部瑜伽、做好防晒保湿，可有效延缓发展。</p>
+      
+      <hr style="border:1px solid var(--border);margin:18px 0">
+      <p style="font-weight:700;color:var(--roseD);margin-bottom:10px">🧘 推荐每日面部瑜伽计划（15分钟）</p>
+      <ol style="padding-left:20px;line-height:2.2;font-size:14px">
+        ${allYoga.map((y,i)=>`<li>${y}</li>`).join('')}
+      </ol>
+      <p style="margin-top:12px;font-size:13px;color:var(--textM)">⏱ 建议时段：晨间洁面后（激活面部循环） + 晚间洁面后（配合修复精华）。坚持4-8周评估效果。</p>
+    </div>`;
+  
+  document.getElementById('aiSummaryContent').innerHTML = summary;
+  document.getElementById('aiSummary').style.display = 'block';
 }
 
 function getDetectedProblems(){
