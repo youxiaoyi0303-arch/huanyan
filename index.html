@@ -526,33 +526,37 @@ function showToast(m){const t=document.getElementById('toast');t.textContent=m;t
 // PDF
 async function generatePDF(){
   showToast('📄 生成中...');
-  const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});let y=14;
-  function L(t,s=10,b=false,h=7){if(y+h>270){doc.addPage();y=14;}doc.setFontSize(s);doc.setFont('helvetica',b?'bold':'normal');doc.text(t,14,y,{maxWidth:180});y+=h;}
-  doc.setFontSize(20);doc.setTextColor(184,112,112);L('焕颜 — 面部衰老分析报告',16,true);y+=4;
-  doc.setFontSize(9);doc.setTextColor(100);L('生成时间：'+new Date().toLocaleString('zh-CN'));L('基于68点面部关键点检测 · 仅供美容参考');y+=4;doc.setTextColor(45);
-  const cards=document.querySelectorAll('.problem-card');
-  cards.forEach((card,i)=>{
-    if(y>240){doc.addPage();y=14;}
-    const name=card.querySelector('.problem-name')?.textContent||'';
-    const sev=card.querySelector('.sev-label')?.textContent||'';
-    const cause=card.querySelector('.anatomy-box p')?.textContent||'';
-    const habits=card.querySelectorAll('.habit-tag');
-    const treatments=card.querySelectorAll('.sol-item');
-    const yoga=card.querySelectorAll('.yoga-step span:last-child');
-    L((i+1)+'. '+name+' ['+sev+']',13,true);y+=2;
-    doc.setFontSize(9);
-    if(cause){L('原因：'+cause,9,false,Math.ceil(cause.length/50)*4+2);}
-    if(habits.length){let h='习惯：';habits.forEach(t=>h+=t.textContent+'、');L(h.slice(0,-1),9,false,4);}
-    if(treatments.length){L('医美：',9,true,4);treatments.forEach(t=>{L('  • '+t.textContent.replace(/\s+/g,' '),9,false,4);});}
-    if(yoga.length){L('瑜伽：',9,true,4);yoga.forEach((s,j)=>{L('  '+(j+1)+'. '+s.textContent,9,false,4);});}
-    y+=3;
+  
+  // 截取报告内容区域为图片（完美渲染中文）
+  const el = document.getElementById('analysisSection');
+  const canvas = await html2canvas(el, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: '#FAF7F2',
+    logging: false
   });
-  if(y+30>270){doc.addPage();y=14;}
-  doc.setFontSize(8);doc.setTextColor(150,100,100);
-  L('⚠️ 免责声明：本报告仅供美容参考，不构成医疗诊断或治疗建议。AI检测存在误差，请以执业医师面诊为准。');y+=4;
-  L('医美价格为市场参考范围，实际费用因地区、机构、医生资质而异。本报告不替代专业医学意见。');
+  
+  // 将截图放入 PDF
+  const {jsPDF} = window.jspdf;
+  const imgData = canvas.toDataURL('image/png');
+  const pageW = 190, pageH = 277;
+  const imgW = pageW - 10;
+  const imgH = (canvas.height / canvas.width) * imgW;
+  
+  const doc = new jsPDF({unit: 'mm', format: 'a4'});
+  let y = 5;
+  let remainingH = imgH;
+  
+  while (remainingH > 0) {
+    if (y > 5) doc.addPage();
+    const sliceH = Math.min(remainingH, pageH - 15);
+    doc.addImage(imgData, 'PNG', 5, y, imgW, imgH, undefined, 'FAST', 0, y > 5 ? (imgH - remainingH) : 0);
+    remainingH -= sliceH;
+    y = 5;
+  }
+  
   doc.save('焕颜_面部衰老分析报告.pdf');
-  showToast('✅ PDF 已下载');
+  showToast('✅ PDF 已下载（中文正常）');
 }
 </script>
 </body>
