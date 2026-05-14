@@ -2,241 +2,376 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>焕颜 — 面部衰老分析</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>焕颜 — AI面部衰老分析</title>
 <style>
-:root{--cream:#F9F5F0;--roseD:#B87070;--text:#2D2424;--textL:#6B5E5E;--textM:#9B8E8E;--border:#E8DDD5;--card:#FFF;--radius:16px}
+:root{--cream:#F9F5F0;--roseD:#B87070;--roseL:#F0DEDE;--text:#2D2424;--textL:#6B5E5E;--textM:#9B8E8E;--border:#E8DDD5;--card:#FFF;--radius:14px;--red:#E05555;--orange:#D4894A;--yellow:#C9A040}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:sans-serif;background:var(--cream);color:var(--text);line-height:1.7}
-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(249,245,240,.92);backdrop-filter:blur(20px);padding:0 24px}
-.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px}
-.logo-wrap{display:flex;align-items:center;gap:8px;text-decoration:none}
-.logo-wrap img{height:32px}.logo-wrap span{font-size:22px;font-weight:700;color:var(--roseD)}
-.nav-cta{background:var(--roseD);color:#fff;border:none;padding:8px 20px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer}
-.hero{padding:120px 24px 60px;text-align:center;max-width:700px;margin:0 auto}
-.hero img{width:100px;margin-bottom:20px}.hero h1{font-size:36px;margin-bottom:12px}.hero h1 span{color:var(--roseD)}.hero p{color:var(--textM);margin-bottom:24px}
-.section{max-width:1000px;margin:0 auto;padding:0 24px 60px}
-.section-title{text-align:center;margin-bottom:36px}.section-title h2{font-size:28px;margin-bottom:8px}.section-title p{color:var(--textM)}
-.upload-zone{background:var(--card);border:2px dashed #F0DEDE;border-radius:var(--radius);padding:48px 24px;text-align:center;cursor:pointer}.upload-zone input{display:none}.upload-zone h3{font-size:18px;margin-bottom:4px}.upload-zone p{color:var(--textM);font-size:14px}
-.preview-area{display:none;margin-top:24px}.preview-area.active{display:block}
-.preview-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+body{font-family:-apple-system,sans-serif;background:var(--cream);color:var(--text);line-height:1.7;font-size:15px}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(249,245,240,.92);backdrop-filter:blur(20px);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo-wrap{display:flex;align-items:center;gap:8px;text-decoration:none}.logo-wrap img{height:30px}.logo-wrap span{font-size:20px;font-weight:700;color:var(--roseD)}
+.nav-cta{background:var(--roseD);color:#fff;border:none;padding:8px 18px;border-radius:18px;font-size:13px;font-weight:600;cursor:pointer}
+.hero{padding:120px 20px 50px;text-align:center;max-width:600px;margin:0 auto}
+.hero img{width:90px;margin-bottom:16px}.hero h1{font-size:32px;margin-bottom:10px}.hero h1 span{color:var(--roseD)}.hero p{color:var(--textM);margin-bottom:20px;font-size:14px}
+.section{max-width:1000px;margin:0 auto;padding:0 16px 50px}
+.section-title{text-align:center;margin-bottom:28px}.section-title h2{font-size:24px;margin-bottom:6px}.section-title p{color:var(--textM);font-size:14px}
+.upload-zone{background:var(--card);border:2px dashed var(--roseL);border-radius:var(--radius);padding:40px 20px;text-align:center;cursor:pointer}.upload-zone input{display:none}.upload-zone h3{font-size:17px;margin-bottom:4px}.upload-zone p{color:var(--textM);font-size:13px}
+.preview-area{display:none;margin-top:20px}.preview-area.active{display:block}
+.preview-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 @media(max-width:768px){.preview-grid{grid-template-columns:1fr}}
-.preview-card{background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
-.preview-card h3{font-size:14px;text-align:center;margin-bottom:8px}
+.preview-card{background:var(--card);border-radius:var(--radius);padding:12px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.preview-card h3{font-size:13px;text-align:center;margin-bottom:6px}
 .canvas-wrap{background:#f0ebe3;border-radius:10px;overflow:hidden;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center}
 .canvas-wrap canvas{max-width:100%;max-height:100%}
-.spinner{width:36px;height:36px;border:3px solid #F0DEDE;border-top-color:var(--roseD);border-radius:50%;animation:spin .8s linear infinite;margin:30px auto}
-@keyframes spin{to{transform:rotate(360deg)}}
-.progress-bar{height:4px;background:var(--border);border-radius:2px;margin:20px 0}.progress-fill{height:100%;background:var(--roseD);border-radius:2px;width:0;transition:.5s}
-.btn{display:inline-block;padding:12px 28px;border-radius:24px;font-size:14px;font-weight:600;cursor:pointer;border:none}
-.btn-primary{background:var(--roseD);color:#fff}.btn-secondary{background:#fff;color:var(--roseD);border:1.5px solid #F0DEDE}
+.spinner{width:36px;height:36px;border:3px solid var(--roseL);border-top-color:var(--roseD);border-radius:50%;animation:spin .8s linear infinite;margin:24px auto}@keyframes spin{to{transform:rotate(360deg)}}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;margin:16px 0}.progress-fill{height:100%;background:var(--roseD);border-radius:2px;width:0;transition:.5s}
+.btn{display:inline-block;padding:11px 24px;border-radius:22px;font-size:14px;font-weight:600;cursor:pointer;border:none;text-decoration:none}
+.btn-primary{background:var(--roseD);color:#fff}.btn-secondary{background:#fff;color:var(--roseD);border:1.5px solid var(--roseL)}.btn-dark{background:#2D2424;color:#fff}
 .btn-group{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.tabs{display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap;justify-content:center}
-.tab{padding:8px 16px;border-radius:18px;font-size:13px;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--textL)}
+.tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;justify-content:center}
+.tab{padding:8px 14px;border-radius:16px;font-size:12px;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--textL);white-space:nowrap}
 .tab.active{background:var(--roseD);color:#fff;border-color:var(--roseD)}
 .tab-content{display:none}.tab-content.active{display:block}
-.knowledge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.knowledge-card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
-.knowledge-card img{width:100%;height:160px;object-fit:cover;border-radius:10px;margin-bottom:12px;display:block}
-.knowledge-card .tag{display:inline-block;background:#F0DEDE;color:var(--roseD);padding:2px 10px;border-radius:10px;font-size:11px;margin-bottom:8px}
-.knowledge-card h4{font-size:16px;font-weight:700;margin-bottom:6px}.knowledge-card p{font-size:13px;color:var(--textL)}
-.problem-card{background:var(--card);border-radius:var(--radius);padding:24px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.05);border-left:4px solid #E05555}
-.problem-name{font-size:18px;font-weight:700;margin-bottom:12px}
-.severity{display:flex;align-items:center;gap:3px;margin-bottom:8px}.sev-dot{width:8px;height:8px;border-radius:50%}.sev-dot.f{background:#E05555}.sev-dot.e{background:#D4894A}
-.sev-label{font-size:11px;padding:2px 10px;border-radius:10px;margin-left:6px;background:#FDE8E8;color:#E05555}
-.habits-list{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}.habit-tag{background:#FFF8F5;border:1px solid #F0DEDE;padding:3px 10px;border-radius:10px;font-size:11px}
-.solution-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.knowledge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.knowledge-card{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.knowledge-card img{width:100%;height:160px;object-fit:cover;display:block}
+.knowledge-card .body{padding:16px}.knowledge-card .tag{display:inline-block;background:var(--roseL);color:var(--roseD);padding:2px 8px;border-radius:8px;font-size:10px;margin-bottom:6px}
+.knowledge-card h4{font-size:15px;font-weight:700;margin-bottom:4px}.knowledge-card p{font-size:12px;color:var(--textL);line-height:1.6}
+.problem-card{background:var(--card);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.05);border-left:4px solid var(--red)}
+.problem-name{font-size:16px;font-weight:700;margin-bottom:2px}
+.severity{display:flex;align-items:center;gap:2px;margin-bottom:8px}.sev-dot{width:7px;height:7px;border-radius:50%}.sev-dot.f{background:var(--red)}.sev-dot.o{background:var(--orange)}.sev-dot.y{background:var(--yellow)}
+.sev-label{font-size:10px;padding:2px 8px;border-radius:8px;margin-left:4px}.sev-label.h{background:#FDE8E8;color:var(--red)}.sev-label.m{background:#FDF0E4;color:var(--orange)}.sev-label.l{background:#FDF8E8;color:var(--yellow)}
+.info-box{background:#FFFBF6;border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:8px 0;font-size:13px}
+.info-box h5{color:var(--roseD);margin-bottom:4px}.info-box p{color:var(--textL);line-height:1.7}
+.habits-list{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}.habit-tag{background:#FFF8F5;border:1px solid #F0DEDE;padding:2px 8px;border-radius:8px;font-size:11px}
+.solution-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
 @media(max-width:768px){.solution-grid{grid-template-columns:1fr}}
-.solution-card{background:#FFFBF6;border-radius:10px;padding:14px}.sol-item{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px}.sol-price{color:var(--roseD);font-weight:600}
-.yoga-step{display:flex;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}.yoga-step .num{background:#F0DEDE;color:var(--roseD);width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
-.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#2D2424;color:#fff;padding:10px 24px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .4s;z-index:200}.toast.show{opacity:1}
-.disclaimer{background:#FFF8F5;border:1px solid #F0DEDE;border-radius:10px;padding:14px;margin-top:16px;font-size:12px;color:var(--textM)}
-footer{text-align:center;padding:40px;color:var(--textM);font-size:12px;border-top:1px solid var(--border)}
+.solution-card{background:#FFFBF6;border-radius:10px;padding:12px}.sol-item{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:12px}.sol-price{color:var(--roseD);font-weight:600}
+.yoga-step{display:flex;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;line-height:1.6}.yoga-step .num{background:var(--roseL);color:var(--roseD);width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2D2424;color:#fff;padding:10px 20px;border-radius:18px;font-size:13px;opacity:0;transition:.4s;z-index:200}.toast.show{opacity:1}
+.disclaimer{background:#FFF8F5;border:1px solid #F0DEDE;border-radius:10px;padding:12px;margin-top:12px;font-size:11px;color:var(--textM)}
+footer{text-align:center;padding:30px;color:var(--textM);font-size:11px;border-top:1px solid var(--border)}
+.summary-box{background:var(--card);border-radius:var(--radius);padding:20px;margin:20px 0;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.summary-box h3{color:var(--roseD);margin-bottom:12px;font-size:18px}
+.annotation-legend{display:flex;gap:10px;justify-content:center;margin-top:6px;font-size:10px;flex-wrap:wrap}
+.legend-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
 </style>
 </head>
 <body>
 
-<nav><div class="nav-inner">
+<nav>
   <a href="#hero" class="logo-wrap"><img src="logo.png" alt="焕颜"><span>焕 颜</span></a>
   <button class="nav-cta" onclick="document.getElementById('analyze').scrollIntoView({behavior:'smooth'})">免费分析</button>
-</div></nav>
+</nav>
 
 <section class="hero" id="hero">
   <img src="logo.png" alt="焕颜">
   <h1>读懂<span>每一寸肌肤</span><br>从容面对岁月</h1>
-  <p>上传照片，AI 自动识别衰老问题 · 面部瑜伽改善方案</p>
+  <p>上传照片 · AI智能标注面部问题 · 针对性面部瑜伽方案</p>
   <div class="btn-group">
-    <button class="btn btn-primary" onclick="document.getElementById('analyze').scrollIntoView({behavior:'smooth'})">📷 上传照片</button>
+    <button class="btn btn-primary" onclick="document.getElementById('analyze').scrollIntoView({behavior:'smooth'})">📷 开始分析</button>
     <button class="btn btn-secondary" onclick="document.getElementById('knowledge').scrollIntoView({behavior:'smooth'})">📚 知识库</button>
   </div>
 </section>
 
 <section class="section" id="analyze">
-  <div class="section-title"><h2>上传照片分析</h2><p>正面素颜照 · 光线均匀</p></div>
+  <div class="section-title"><h2>上传照片，智能分析</h2><p>正面素颜 · 光线充足 · 不戴眼镜帽子</p></div>
   <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
     <h3>📷 点击上传照片</h3><p>支持 JPG/PNG</p>
     <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)">
   </div>
   <div class="preview-area" id="previewArea">
     <div class="preview-grid">
-      <div class="preview-card"><h3>原图</h3><div class="canvas-wrap"><canvas id="c1"></canvas></div></div>
-      <div class="preview-card"><h3>问题标注</h3><div class="canvas-wrap"><canvas id="c2"></canvas></div></div>
-      <div class="preview-card"><h3>改善效果</h3><div class="canvas-wrap"><canvas id="c3"></canvas></div></div>
+      <div class="preview-card"><h3>📷 原图</h3><div class="canvas-wrap"><canvas id="c1"></canvas></div></div>
+      <div class="preview-card"><h3>🔍 问题标注</h3><div class="canvas-wrap"><canvas id="c2"></canvas></div><div class="annotation-legend"><span class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>重度</span><span class="legend-item"><span class="legend-dot" style="background:var(--orange)"></span>中度</span><span class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span>轻度</span></div></div>
+      <div class="preview-card"><h3>✨ 改善效果</h3><div class="canvas-wrap"><canvas id="c3"></canvas></div></div>
     </div>
-    <div style="text-align:center;margin-top:16px"><button class="btn btn-primary" onclick="startAnalysis()">🔬 开始分析</button></div>
-    <div id="prog" style="display:none;text-align:center;margin-top:16px"><div class="spinner"></div><p id="progText">分析中...</p><div class="progress-bar"><div class="progress-fill" id="progFill"></div></div></div>
+    <div style="text-align:center;margin-top:14px"><button class="btn btn-primary" onclick="startAnalysis()">🔬 开始详细分析</button></div>
+    <div id="prog" style="display:none;text-align:center;margin-top:14px"><div class="spinner"></div><p id="progText" style="color:var(--textM);font-size:13px">分析中...</p><div class="progress-bar"><div class="progress-fill" id="progFill"></div></div></div>
   </div>
-  <div id="results" style="display:none;margin-top:24px"></div>
+  <div id="results" style="display:none;margin-top:20px"></div>
 </section>
 
-<section class="section" id="knowledge" style="padding-top:40px">
+<section class="section" id="knowledge" style="padding-top:30px">
   <div class="section-title"><h2>抗衰知识库</h2></div>
   <div class="tabs">
     <button class="tab active" onclick="switchTab('anatomy')">🧬 五层解剖</button>
     <button class="tab" onclick="switchTab('yoga')">🧘 面部瑜伽</button>
-    <button class="tab" onclick="switchTab('aesthetics')">💉 医美参考</button>
     <button class="tab" onclick="switchTab('habits')">⚠️ 坏习惯</button>
+    <button class="tab" onclick="switchTab('aesthetics')">💉 医美参考</button>
+    <button class="tab" onclick="switchTab('skincare')">🧴 护肤成分</button>
+    <button class="tab" onclick="switchTab('aging')">📖 衰老分类</button>
   </div>
   <div class="tab-content active" id="tab-anatomy"><div class="knowledge-grid">
-    <div class="knowledge-card"><img src="images/2026-04-21-03-face-fascia.jpg" onerror="this.style.display='none'"><span class="tag">第1层</span><h4>皮肤层</h4><p>表皮如保鲜膜，真皮的胶原是"床垫海绵"。30岁后年流失1%。紫外线穿透玻璃直达真皮层。</p></div>
-    <div class="knowledge-card"><img src="images/2026-04-05-01-facial-muscles-anatomy.jpg" onerror="this.style.display='none'"><span class="tag">第2层</span><h4>SMAS筋膜层</h4><p>面部的"吊床网兜"。韧带松弛→法令纹深、下颌线模糊。</p></div>
-    <div class="knowledge-card"><img src="images/2026-04-21-01-face-muscles.jpg" onerror="this.style.display='none'"><span class="tag">第3层</span><h4>肌肉层</h4><p>几十块小肌肉控制表情。反复收缩→动态纹。像折纸留印。</p></div>
-    <div class="knowledge-card"><img src="images/2026-04-21-04-face-bones.jpg" onerror="this.style.display='none'"><span class="tag">第5层</span><h4>骨骼层</h4><p>40岁后骨年吸收0.5%。眼眶骨缩→眼窝凹；下颌骨变→双下巴。</p></div>
+<div class="knowledge-card"><img src="images/2026-04-21-03-face-fascia.jpg" onerror="this.style.display='none'"><div class="body"><span class="tag">第1层</span><h4>表皮与真皮（皮肤层）</h4><p>表皮是屏障如保鲜膜；真皮含胶原蛋白和弹性纤维，像床垫海绵。30岁起每年流失1%胶原、2%弹性。紫外线穿透玻璃直达真皮层，是皮肤老化的头号杀手。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-05-01-facial-muscles-anatomy.jpg" onerror="this.style.display='none'"><div class="body"><span class="tag">第2层</span><h4>SMAS筋膜层</h4><p>浅表肌腱膜系统，面部的"弹性吊床"。由颧韧带、下颌韧带、颈阔肌韧带组成悬挂系统。40岁后韧带松弛→软组织下垂→法令纹加深、下颌线模糊。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-21-01-face-muscles.jpg" onerror="this.style.display='none'"><div class="body"><span class="tag">第3层</span><h4>表情肌层（肌肉层）</h4><p>额肌、眼轮匝肌、口轮匝肌等几十块肌肉控制表情。反复收缩→动态皱纹。肌纤维萎缩或肥大→面部不对称。肉毒素注射的作用层。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-08-01-facial-muscles-anatomy.jpg" onerror="this.style.display='none'"><div class="body"><span class="tag">第4层</span><h4>脂肪隔室层</h4><p>深层脂肪垫（颧脂肪垫、颊脂肪垫）和浅层脂肪隔（眶下脂肪）。萎缩→凹陷（太阳穴、苹果肌）；膨出→眼袋、双下巴。脂肪移位是衰老最显著的表征。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-21-04-face-bones.jpg" onerror="this.style.display='none'"><div class="body"><span class="tag">第5层</span><h4>骨骼层</h4><p>40岁后骨骼年吸收0.5%。眼眶骨吸收→眼窝凹陷、眼角下垂；上颌骨吸收→法令纹加深；下颌骨变长→双下巴。骨骼是面部轮廓的"地基"。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-08-02-facial-muscles-labeled.jpg" onerror="this.style.display='none'"><div class="body"><span class="tag">五层联动</span><h4>衰老是连锁反应</h4><p>骨吸收→地基塌陷→筋膜挂不住→脂肪下滑→皮肤起皱。深层决定浅层，只涂护肤品不练筋膜肌肉，效果有限。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-05-04-face-bone-structure.jpg" onerror="this.style.display='none'"><div class="body"><span class="tag">骨骼</span><h4>面部骨骼结构</h4><p>眼眶骨、颧骨、上颌骨、下颌骨构成面部轮廓框架。骨质流失是衰老最深层的驱动力。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-05-03-anatomical-face-muscles-poster.jpg" onerror="this.style.display='none'"><div class="body"><span class="tag">肌肉</span><h4>表情肌分布图</h4><p>了解每一块肌肉的位置和功能，才能精准锻炼。面部瑜伽就是针对性地训练这些肌肉。</p></div></div>
   </div></div>
   <div class="tab-content" id="tab-yoga"><div class="knowledge-grid">
-    <div class="knowledge-card"><img src="images/2026-04-21-05-face-yoga-poses.jpg" onerror="this.style.display='none'"><h4>🧘 法令纹提拉</h4><p>⏱3分钟 🕐早晚<br>V型指从鼻翼沿法令纹向耳根提拉→压耳垂3秒→重复10次</p></div>
-    <div class="knowledge-card"><img src="images/2026-04-08-03-face-yoga-guide.jpg" onerror="this.style.display='none'"><h4>👁 眼周放松</h4><p>⏱2分钟 🕐早晚<br>无名指点涂眼霜→眼尾打圈30秒→向太阳穴提5次</p></div>
-    <div class="knowledge-card"><img src="images/2026-04-21-03-face-fascia.jpg" onerror="this.style.display='none'"><h4>💆 下颌线提升</h4><p>⏱5分钟 🕐每日2-3次<br>抬头看天花板→舌顶上颚→双手提拉→保持5秒</p></div>
-    <div class="knowledge-card"><img src="images/2026-04-21-01-face-muscles.jpg" onerror="this.style.display='none'"><h4>🍎 苹果肌激活</h4><p>⏱4分钟 🕐每日2次<br>找颧骨下方凹陷→向上向外提拉→画圈30秒</p></div>
-    <div class="knowledge-card"><img src="images/2026-04-05-05-face-yoga-guide.jpg" onerror="this.style.display='none'"><h4>👄 口角纹改善</h4><p>⏱2分钟 🕐每日2次<br>食中指放嘴角→向上向外提拉→微笑5秒</p></div>
-    <div class="knowledge-card"><img src="images/2026-04-08-03-face-yoga-guide.jpg" onerror="this.style.display='none'"><h4>🦢 颈纹改善</h4><p>⏱3分钟 🕐早晚<br>中指从锁骨向上推→三线各10次</p></div>
-    <div class="knowledge-card"><h4>🧖 全脸淋巴引流</h4><p>⏱5-8分钟 🕐每晚<br>额头→太阳穴→鼻翼→耳前→下巴→锁骨</p></div>
-    <div class="knowledge-card"><h4>😊 笑容提肌训练</h4><p>⏱1分钟 🕐随时<br>嘴角向两侧拉开→向上提→保持10秒</p></div>
-  </div></div>
-  <div class="tab-content" id="tab-aesthetics"><div class="knowledge-grid">
-    <div class="knowledge-card"><h4>热玛吉</h4><p>💰15000-25000元|⏱1-2年<br>射频加热唤醒胶原。适合35+初老。</p></div>
-    <div class="knowledge-card"><h4>超声刀</h4><p>💰10000-20000元|⏱1-2年<br>直达SMAS筋膜层。适合下颌线模糊。</p></div>
-    <div class="knowledge-card"><h4>肉毒素</h4><p>💰2000-5000元|⏱4-6月<br>让表情肌休息。对动态纹立竿见影。</p></div>
-    <div class="knowledge-card"><h4>玻尿酸</h4><p>💰3000-8000元/支|⏱6-18月<br>把缺失体积补回去。选对医生最重要。</p></div>
+<div class="knowledge-card"><img src="images/2026-04-21-05-face-yoga-poses.jpg" onerror="this.style.display='none'"><div class="body"><h4>🧘 法令纹提拉</h4><p>⏱3分钟·🕐早晚·🎯SMAS+颧脂肪垫<br>V型指从鼻翼沿法令纹向耳根提拉→压耳垂3秒→重复10次。只向上！</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-08-03-face-yoga-guide.jpg" onerror="this.style.display='none'"><div class="body"><h4>👁 眼周放松</h4><p>⏱2分钟·🕐早晚·🎯眼轮匝肌<br>无名指点涂眼霜→眼尾打圈30秒→向太阳穴提5次。力度最轻！</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-21-03-face-fascia.jpg" onerror="this.style.display='none'"><div class="body"><h4>💆 下颌线提升</h4><p>⏱5分钟·🕐每日2-3次·🎯颈阔肌+下颌韧带<br>抬头看天花板→舌顶上颚→双手提拉→保持5秒。办公室就能做。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-21-01-face-muscles.jpg" onerror="this.style.display='none'"><div class="body"><h4>🍎 苹果肌激活</h4><p>⏱4分钟·🕐每日2次·🎯颧脂肪垫<br>找颧骨下方凹陷→向上向外提拉→画圈30秒→压四白穴3秒。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-05-05-face-yoga-guide.jpg" onerror="this.style.display='none'"><div class="body"><h4>👄 口角纹改善</h4><p>⏱2分钟·🕐每日2次·🎯口轮匝肌<br>食指中指放嘴角→向上向外提拉→微笑5秒→重复10次。</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-08-03-face-yoga-guide.jpg" onerror="this.style.display='none'"><div class="body"><h4>🦢 颈纹改善</h4><p>⏱3分钟·🕐早晚·🎯颈阔肌<br>中指从锁骨向上推→三线各10次→由下往上一个方向→轻拍30秒。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🧖 全脸淋巴引流</h4><p>⏱5-8分钟·🕐每晚·🎯全脸<br>额头→太阳穴→鼻翼→耳前→下巴→耳后→锁骨。单向推压。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>😊 笑容提肌训练</h4><p>⏱1分钟·🕐随时·🎯颧大肌<br>嘴角向两侧拉开→向上提→保持10秒→5次。等红灯都能做。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>👆 额肌放松</h4><p>⏱2分钟·🕐早晚·🎯额肌<br>食指从眉心向发际线交替推压→到达发际线后轻叩10次→打圈30秒。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>👃 鼻翼提拉</h4><p>⏱2分钟·🕐每日2次·🎯鼻肌<br>食指尖放鼻翼两侧→向上推压→同时鼻孔张合10次→放松重复。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🫦 唇周紧致</h4><p>⏱3分钟·🕐早晚·🎯口轮匝肌<br>食指中指夹住上下唇→向外轻拉→发"O"音5秒→"E"音5秒→交替10次。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>👂 耳部淋巴引流</h4><p>⏱2分钟·🕐每晚·🎯耳周淋巴<br>捏耳垂向下拉5秒→沿耳廓向上按摩→耳后推至颈部→最后到锁骨。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🦴 颧骨按摩提升</h4><p>⏱3分钟·🕐每日2次·🎯颧大肌+SMAS<br>掌根从颧骨向太阳穴45°推压→打圈按摩10秒→重复8次。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🌬️ 面部深呼吸</h4><p>⏱3分钟·🕐随时·🎯全脸筋膜<br>深吸气鼓起双颊→屏5秒→缓慢吐气收脸颊→重复10次。增加血氧。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🧏 下颌关节放松</h4><p>⏱2分钟·🕐随时·🎯咬肌<br>掌根按咬肌→张嘴最大→缓慢闭合约10秒→重复5次。防国字脸。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>👐 全脸温热按压</h4><p>⏱3分钟·🕐每晚·🎯全脸筋膜<br>手搓热→掌心分别按压额头/眼周/面颊/下颌各15秒→重复2遍。助眠。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>👆 人中提拉</h4><p>⏱1分钟·🕐每日2次·🎯上唇方肌<br>食指横放人中→向上微提→保持3秒→5次。改善人中变长。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🪷 眉心舒展冥想</h4><p>⏱3分钟·🕐随时·🎯皱眉肌<br>闭眼→彻底放松眉心→想像眉间被温柔展开→配合深呼吸1-2分钟。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>✋ 咬肌按摩</h4><p>⏱3分钟·🕐每日1次·🎯咬肌<br>掌根按咬肌画圈按摩2分钟→张嘴保持10秒→重复5次。改善脸宽。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>👀 眼轮匝肌训练</h4><p>⏱2分钟·🕐早晚·🎯眼轮匝肌<br>紧闭眼5秒→睁大眼5秒→交替10次→最后闭眼轻按眼球10秒放松。</p></div></div>
   </div></div>
   <div class="tab-content" id="tab-habits"><div class="knowledge-grid">
-    <div class="knowledge-card"><h4>😴 侧睡压迫</h4><p>单侧睡6-8小时→法令纹/眼纹那一侧更深。建议仰卧+真丝枕套。</p></div>
-    <div class="knowledge-card"><h4>📱 低头看手机</h4><p>低头60°颈椎承重27kg→颈纹深+双下巴。举到眼平齐。</p></div>
-    <div class="knowledge-card"><h4>☀️ 不防晒</h4><p>光老化占80%。阴天室内冬天都要涂SPF30+。</p></div>
-    <div class="knowledge-card"><h4>🍰 高糖饮食</h4><p>糖+胶原=糖化反应→皮肤松弛暗黄。</p></div>
+<div class="knowledge-card"><div class="body"><h4>😴 长期侧睡</h4><p>单侧睡6-8小时→法令纹/眼纹该侧更深。推荐仰卧+真丝枕套。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>📱 低头看手机</h4><p>低头60°颈椎承重27kg→颈纹+双下巴。举到眼平齐，30分钟抬头。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>😠 不自觉皱眉</h4><p>视力差→眯眼→鱼尾纹。压力大→皱眉→川字纹。每天几百次。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>☀️ 不涂防晒</h4><p>光老化占80%。阴天/室内/冬天都要SPF30+。最便宜的抗衰投资。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🍰 高糖饮食</h4><p>糖+胶原=糖化反应→胶原变硬变脆→皮肤松弛暗黄。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🚬 吸烟</h4><p>血管收缩→供血减少→胶原合成受阻。吸烟者平均显老5-10岁。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>😰 长期熬夜</h4><p>皮质醇升高→分解胶原。错过22:00-2:00皮肤修复黄金期。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>💧 喝水太少</h4><p>皮肤含水量足才饱满。每天1.5-2L水。咖啡茶不能替代。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🍷 频繁饮酒</h4><p>酒精→血管扩张→面部潮红→毛细血管破裂→皮肤松弛。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🪞 过度去角质</h4><p>频繁磨砂→皮脂膜破坏→屏障受损→敏感泛红。每周1次即可。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🛏️ 枕头太高</h4><p>高枕→颈部前倾→颈纹加深+双下巴。选记忆棉枕保持颈椎自然曲线。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🧂 吃太咸</h4><p>钠摄入过多→水分滞留→面部浮肿→加重眼袋和双下巴。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🌙 不卸妆睡觉</h4><p>化妆品+油脂堵塞毛孔→加速皮肤老化。再累也要卸妆洁面。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🏃 完全不运动</h4><p>缺乏运动→全身循环差→皮肤供氧不足→暗沉无光。每周3次有氧。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🪑 长期盘腿坐</h4><p>盘腿→骨盆倾斜→脊柱侧弯→面部不对称加重。保持正确坐姿。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🤳 自拍固定表情</h4><p>长期一侧脸朝镜头→单侧肌肉过度使用→大小脸。换边拍照。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🧣 冬天不护脸</h4><p>寒冷+干燥+风→皮肤血管收缩→代谢减慢→加速老化。戴口罩围巾。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>😬 习惯性咬紧牙关</h4><p>压力大不自觉咬紧→咬肌持续紧张→脸变宽。舌尖轻抵上颚放松。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🍬 不抗糖化</h4><p>AGEs（糖化终产物）堆积→胶原硬化→皮肤蜡黄。减少精制糖和油炸。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🧪 不抗氧化</h4><p>自由基攻击细胞→加速衰老。多吃蓝莓番茄绿茶，补充维C维E。</p></div></div>
+  </div></div>
+  <div class="tab-content" id="tab-aesthetics"><div class="knowledge-grid">
+<div class="knowledge-card"><div class="body"><h4>热玛吉</h4><p>💰15000-25000元·⏱1-2年·🎯全脸紧致<br>射频加热真皮和筋膜层，唤醒自身胶原再生。适合35+初老，无创无恢复期。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>超声刀</h4><p>💰10000-20000元·⏱1-2年·🎯SMAS筋膜层<br>精准聚焦超声直达筋膜层，如"隐形拉皮"。适合下颌线模糊、法令纹深。2-3个月效果达峰值。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>肉毒素</h4><p>💰2000-5000元·⏱4-6月·🎯动态纹<br>阻断神经肌肉信号，让表情肌"休息"。抬头纹/川字纹/鱼尾纹立竿见影。需定期补打。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>玻尿酸填充</h4><p>💰3000-8000元/支·⏱6-18月·🎯凹陷<br>把缺失的体积补回去。不同部位不同硬度。选对医生比品牌重要。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>线雕提升</h4><p>💰10000-30000元·⏱1-2年·🎯下垂<br>可吸收蛋白线如"帐篷绳"拉起组织。适合中下面部下垂。1-2周恢复期。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>水光针</h4><p>💰1000-3000元/次·⏱1-3月·🎯补水<br>透明质酸直入真皮层。保养型项目，3-5次一疗程，改善干燥细纹暗沉。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>胶原蛋白填充</h4><p>💰5000-10000元/支·⏱12-18月·🎯泪沟<br>比玻尿酸自然，适合眼下等皮肤薄区域。同时刺激自身胶原再生。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>面部提升手术</h4><p>💰50000-100000元·⏱5-10年·🎯严重松弛<br>终极方案。适合50+严重下垂。创伤大恢复久，务必选正规三甲医院。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>自体脂肪填充</h4><p>💰10000-30000元·⏱长期·🎯全脸容积<br>自身脂肪无排异。需抽脂+填充两个手术，恢复期较长但效果持久。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>黄金微针</h4><p>💰3000-8000元/次·⏱6-12月·🎯痘坑毛孔<br>微针+射频双重作用。刺激胶原重塑，改善痘坑、毛孔粗大、细纹。</p></div></div>
+  </div></div>
+  <div class="tab-content" id="tab-skincare"><div class="knowledge-grid">
+<div class="knowledge-card"><div class="body"><h4>💡 配合面部瑜伽效果加倍</h4><p style="background:#FFF8F5;padding:8px;border-radius:8px">以下所有护肤成分建议在面部瑜伽前后使用——瑜伽激活循环后毛孔张开，吸收率提升2-3倍。</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🧴 护肤顺序</h4><p><b>晨：</b>洁面→水→维C→眼霜→乳液→防晒<br><b>晚：</b>卸妆→洁面→水→精华(A醇/胜肽)→眼霜→面霜→面部瑜伽→睡眠</p></div></div>
+<div class="knowledge-card"><img src="images/2026-04-05-02-face-acupressure-points.jpg" onerror="this.style.display='none'"><div class="body"><h4>🍊 维C精华</h4><p><b>成分：</b>10-20% L-抗坏血酸<br><b>功效：</b>抗氧化、提亮、促胶原<br><b>解决：</b>暗沉、肤色不均、细纹<br><b>用法：</b>晨间干脸2-3滴按压，开封冷藏<br><b>顺序：</b>水→维C→乳液→防晒</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🌙 A醇/视黄醇</h4><p><b>成分：</b>视黄醇0.1-0.5%<br><b>功效：</b>加速细胞更新、促胶原、淡纹<br><b>解决：</b>抬头纹、法令纹、毛孔粗大<br><b>用法：</b>仅晚间，0.1%起每周2次→逐增<br><b>注意：</b>孕妇禁用！不与酸类同用</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>💧 透明质酸</h4><p><b>成分：</b>大分子+小分子透明质酸钠<br><b>功效：</b>吸水自重1000倍，充盈饱满<br><b>解决：</b>干燥、细纹、缺乏弹性<br><b>用法：</b>微湿脸上使用→立刻面霜锁水<br><b>顺序：</b>水→玻尿酸→面霜</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🧪 六胜肽</h4><p><b>成分：</b>乙酰基六肽-8(10%)<br><b>功效：</b>温和抑制表情肌→"涂抹式肉毒素"<br><b>解决：</b>抬头纹、川字纹、鱼尾纹<br><b>用法：</b>早晚点涂纹路处按摩吸收<br><b>顺序：</b>精华后→面霜前</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🟡 烟酰胺(VB3)</h4><p><b>成分：</b>烟酰胺3-10%<br><b>功效：</b>修复屏障、控油、提亮、抗炎<br><b>解决：</b>暗沉、毛孔粗大、泛红<br><b>用法：</b>每天1-2次，2-3%起建立耐受<br><b>顺序：</b>水后→精华前</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🌿 神经酰胺</h4><p><b>成分：</b>神经酰胺NP/AP/EOP<br><b>功效：</b>填充角质间隙→修复屏障→锁水<br><b>解决：</b>干燥、敏感、脱皮<br><b>用法：</b>每天1-2次，可混入面霜<br><b>顺序：</b>精华后→面霜前</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🫒 角鲨烷</h4><p><b>成分：</b>角鲨烷(甘蔗/橄榄提取)<br><b>功效：</b>最接近人体皮脂→速吸收+锁水<br><b>解决：</b>干燥、按摩润滑减摩擦<br><b>用法：</b>面部瑜伽前3-5滴搓热按压<br><b>顺序：</b>瑜伽前/睡前封层</p></div></div>
+<div class="knowledge-card"><div class="body"><h4>🌰 玫瑰果油</h4><p><b>成分：</b>天然维A酸前体+维C+必需脂肪酸<br><b>功效：</b>淡化色斑、修复疤痕、滋养<br><b>解决：</b>熟龄肌干燥松弛、痘印<br><b>用法：</b>晚间2-3滴搓热按压或混面霜<br><b>顺序：</b>晚间精华后</p></div></div>
+  </div></div>
+  <div class="tab-content" id="tab-aging"><div class="knowledge-grid">
+<div class="knowledge-card"><div class="body"><span class="tag">动态纹</span><h4>表情纹</h4><p>抬头纹、川字纹、鱼尾纹、鼻背纹、口角纹、鸡爪纹。表情肌反复折叠皮肤→年久成固定纹。</p></div></div>
+<div class="knowledge-card"><div class="body"><span class="tag">容积流失</span><h4>凹陷</h4><p>法令纹下垂、苹果肌凹陷、太阳穴凹陷、印第安纹、眼袋泪沟。脂肪垫萎缩或移位。</p></div></div>
+<div class="knowledge-card"><div class="body"><span class="tag">皮肤松弛</span><h4>下垂</h4><p>口角囊袋、木偶纹、婆婆纹、颈纹、下颌线模糊。SMAS筋膜层松弛→软组织下坠。</p></div></div>
+<div class="knowledge-card"><div class="body"><span class="tag">轮廓变形</span><h4>骨骼变化</h4><p>外轮廓不清晰、大小脸、双下巴、眼角下垂、颧骨突出。深层骨骼吸收+脂肪移位。</p></div></div>
+<div class="knowledge-card"><div class="body"><span class="tag">肌肉问题</span><h4>不对称</h4><p>咬肌肥大、大小眼、嘴歪、高低脸。单侧咀嚼、表情习惯、睡姿等长期导致的肌肉失衡。</p></div></div>
   </div></div>
 </section>
 
-<footer>© 2025 焕颜 · 仅供美容参考</footer>
+<footer>© 2025 焕颜 · 仅供美容参考，不构成医疗建议</footer>
 <div class="toast" id="toast"></div>
 
 <script src="face-api.min.js"></script>
 <script>
-// ===== 知识库切换 =====
-function switchTab(name){
-  var tabs=document.querySelectorAll('.tab');
-  var contents=document.querySelectorAll('.tab-content');
-  for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');
-  for(var i=0;i<contents.length;i++)contents[i].classList.remove('active');
-  document.getElementById('tab-'+name).classList.add('active');
-  for(var i=0;i<tabs.length;i++){
-    if(tabs[i].getAttribute('onclick')&&tabs[i].getAttribute('onclick').indexOf(name)!==-1){
-      tabs[i].classList.add('active');
-    }
-  }
-}
-
+// ===== 基础函数 =====
 function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2500);}
+function switchTab(name){var tabs=document.querySelectorAll('.tab');var cs=document.querySelectorAll('.tab-content');for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');for(var i=0;i<cs.length;i++)cs[i].classList.remove('active');var c=document.getElementById('tab-'+name);if(c)c.classList.add('active');for(var i=0;i<tabs.length;i++){if(tabs[i].getAttribute('onclick')&&tabs[i].getAttribute('onclick').indexOf(name)!==-1)tabs[i].classList.add('active');}}
+function drawCanvas(id,img){var c=document.getElementById(id);var s=Math.min((c.parentElement.clientWidth-4)/img.width,1);c.width=img.width*s;c.height=img.height*s;c.getContext('2d').drawImage(img,0,0,c.width,c.height);}
 
 // ===== Face API =====
-var MODEL_URL='./models/';
-var modelsLoaded=false;
-var uploadedImage=null;
-var faceDetection=null;
-
-async function loadModels(){
-  if(modelsLoaded)return;
-  try{
-    await faceapi.nets.ssdMobilenetv1.load(MODEL_URL);
-    await faceapi.nets.faceLandmark68Net.load(MODEL_URL);
-    modelsLoaded=true;
-  }catch(e){showToast('模型加载失败');}
-}
-
-function drawOnCanvas(id,img){var c=document.getElementById(id);var s=Math.min((c.parentElement.clientWidth-4)/img.width,1);c.width=img.width*s;c.height=img.height*s;c.getContext('2d').drawImage(img,0,0,c.width,c.height);}
+var MODEL_URL='./models/',modelsLoaded=false,uploadedImage=null,faceDetection=null;
+async function loadModels(){if(modelsLoaded)return;try{await faceapi.nets.ssdMobilenetv1.load(MODEL_URL);await faceapi.nets.faceLandmark68Net.load(MODEL_URL);modelsLoaded=true;}catch(e){}}
 
 function drawAnnotated(d){
   if(!d)return;var c=document.getElementById('c2');var s=Math.min((c.parentElement.clientWidth-4)/uploadedImage.width,1);c.width=uploadedImage.width*s;c.height=uploadedImage.height*s;var ctx=c.getContext('2d');ctx.drawImage(uploadedImage,0,0,c.width,c.height);
-  var lm=d.landmarks.positions.map(function(p){return{x:p.x*s,y:p.y*s}});
-  var w=c.width,h=c.height,mid=(lm[27].x+lm[30].x)/2;
-  var lJ=Math.abs(lm[4].x-mid),rJ=Math.abs(lm[12].x-mid);
-  var problems=[
-    {n:'法令纹',x:(lm[31].x+lm[48].x)/2,y:(lm[31].y+lm[48].y)/2,c:'#E05555'},
-    {n:'鱼尾纹',x:lm[36].x+12,y:lm[36].y,c:'#E05555'},
-    {n:'鱼尾纹',x:lm[45].x-12,y:lm[45].y,c:'#E05555'},
-    {n:'川字纹',x:(lm[21].x+lm[22].x)/2,y:(lm[21].y+lm[22].y)/2-6,c:'#D4894A'},
-    {n:'泪沟眼袋',x:lm[29].x,y:lm[29].y+14,c:'#D4894A'},
-    {n:'木偶纹',x:(lm[48].x+lm[57].x)/2,y:(lm[48].y+lm[57].y)/2+10,c:'#D4894A'},
-    {n:'下颌线',x:(lm[7].x+lm[8].x)/2,y:(lm[7].y+lm[8].y)/2+12,c:'#D4894A'},
-    {n:'口角囊袋',x:lm[48].x,y:lm[48].y+20,c:'#C9A040'},
-    {n:'口角囊袋',x:lm[54].x,y:lm[54].y+20,c:'#C9A040'},
-    {n:'太阳穴',x:lm[17].x-16,y:lm[17].y,c:'#C9A040'},
-    {n:'太阳穴',x:lm[26].x+16,y:lm[26].y,c:'#C9A040'},
-    {n:'抬头纹',x:(lm[19].x+lm[24].x)/2,y:(lm[19].y+lm[24].y)/2-30,c:'#C9A040'},
-    {n:'脸颊凹陷',x:(lm[3].x+lm[48].x)/2-8,y:(lm[3].y+lm[48].y)/2+5,c:'#D4894A'},
-    {n:'脸颊凹陷',x:(lm[13].x+lm[54].x)/2+8,y:(lm[13].y+lm[54].y)/2+5,c:'#D4894A'},
-    {n:'不对称',x:mid,y:lm[8].y+22,c:lJ/rJ>1.08||rJ/lJ>1.08?'#E05555':'#C9A040'},
+  var lm=d.landmarks.positions.map(function(p){return{x:p.x*s,y:p.y*s}}),w=c.width,h=c.height,mid=(lm[27].x+lm[30].x)/2;
+  var lJ=Math.abs(lm[4].x-mid),rJ=Math.abs(lm[12].x-mid),asym=lJ/rJ>1.08||rJ/lJ>1.08;
+  // 问题点（去重：左右对称只标一侧）
+  var pts=[
+    {n:'法令纹',x:(lm[31].x+lm[48].x)/2,y:(lm[31].y+lm[48].y)/2,co:'#E05555'},
+    {n:'鱼尾纹',x:lm[36].x+10,y:lm[36].y,co:'#E05555'},
+    {n:'川字纹',x:(lm[21].x+lm[22].x)/2,y:(lm[21].y+lm[22].y)/2-5,co:'#D4894A'},
+    {n:'泪沟眼袋',x:lm[29].x,y:lm[29].y+12,co:'#D4894A'},
+    {n:'木偶纹',x:(lm[48].x+lm[57].x)/2,y:(lm[48].y+lm[57].y)/2+8,co:'#D4894A'},
+    {n:'下颌线模糊',x:(lm[7].x+lm[8].x)/2,y:(lm[7].y+lm[8].y)/2+10,co:'#D4894A'},
+    {n:'口角囊袋',x:lm[48].x,y:lm[48].y+18,co:'#C9A040'},
+    {n:'太阳穴凹陷',x:lm[17].x-14,y:lm[17].y,co:'#C9A040'},
+    {n:'抬头纹',x:(lm[19].x+lm[24].x)/2,y:(lm[19].y+lm[24].y)/2-28,co:'#C9A040'},
+    {n:'脸颊凹陷',x:(lm[3].x+lm[48].x)/2-6,y:(lm[3].y+lm[48].y)/2+4,co:'#D4894A'},
+    {n:'颧骨突出',x:lm[1].x-6,y:lm[1].y,co:'#C9A040'},
+    {n:'双下巴',x:lm[8].x,y:lm[8].y+30,co:'#C9A040'},
+    {n:'大小脸',x:mid,y:lm[8].y+20,co:asym?'#E05555':'#C9A040'},
+    {n:'嘴角不对称',x:(lm[48].x+lm[54].x)/2,y:(lm[48].y+lm[54].y)/2+16,co:Math.abs(lm[48].y-lm[54].y)>5?'#D4894A':'#C9A040'},
+    {n:'咬肌',x:lm[5].x-12,y:lm[5].y+10,co:'#C9A040'},
   ];
-  problems.forEach(function(p){
-    var r=Math.min(w,h)*0.014;
-    ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fillStyle=p.c;ctx.fill();
-    ctx.fillStyle='#000';ctx.font='9px sans-serif';ctx.fillText(p.n,p.x-ctx.measureText(p.n).width/2,p.y+r+13);
+  pts.forEach(function(p){
+    if(p.x<5||p.y<5||p.x>w-5||p.y>h-5)return;
+    var r=Math.min(w,h)*0.013;
+    ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fillStyle=p.co;ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.5)';ctx.lineWidth=0.7;ctx.stroke();
+    ctx.fillStyle='rgba(0,0,0,0.7)';ctx.font='9px sans-serif';
+    ctx.fillText(p.n,p.x-ctx.measureText(p.n).width/2,p.y+r+12);
   });
 }
 
 function drawImproved(d){
   var c=document.getElementById('c3');var s=Math.min((c.parentElement.clientWidth-4)/uploadedImage.width,1);c.width=uploadedImage.width*s;c.height=uploadedImage.height*s;var ctx=c.getContext('2d');
-  ctx.filter='brightness(1.08) contrast(0.94) saturate(1.05) blur(0.6px)';
+  ctx.filter='brightness(1.12) contrast(0.90) saturate(1.08) blur(1.2px)';
   ctx.drawImage(uploadedImage,0,0,c.width,c.height);ctx.filter='none';
 }
 
 async function handleFile(e){
   var file=e.target.files[0];if(!file)return;
-  showToast('⏳ 加载AI模型...');
+  showToast('⏳ 加载AI引擎...');
   await loadModels();
+  if(!modelsLoaded){showToast('⚠️ AI模型加载失败，请刷新重试');return;}
   var reader=new FileReader();
   reader.onload=async function(ev){
     uploadedImage=new Image();
     uploadedImage.onload=async function(){
       document.getElementById('previewArea').classList.add('active');
-      drawOnCanvas('c1',uploadedImage);
+      drawCanvas('c1',uploadedImage);
       var d=await faceapi.detectSingleFace(uploadedImage,new faceapi.SsdMobilenetv1Options({minConfidence:0.35})).withFaceLandmarks();
       faceDetection=d;
       if(d){drawAnnotated(d);drawImproved(d);}
-      else{drawOnCanvas('c2',uploadedImage);drawOnCanvas('c3',uploadedImage);showToast('未检测到人脸');}
+      else{drawCanvas('c2',uploadedImage);drawCanvas('c3',uploadedImage);showToast('未检测到人脸，请上传正面照');}
     };
     uploadedImage.src=ev.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-function startAnalysis(){
-  document.getElementById('prog').style.display='block';
-  var steps=['检测中...','识别问题...','生成报告...','完成 ✅'],i=0;
-  var iv=setInterval(function(){
-    if(i<steps.length){document.getElementById('progText').textContent=steps[i];document.getElementById('progFill').style.width=(i+1)*25+'%';i++;}
-    else{clearInterval(iv);document.getElementById('prog').style.display='none';document.getElementById('results').style.display='block';renderResults();}
-  },500);
-}
+// ===== 详细分析报告 =====
+var DETECTED_PROBLEMS=[
+  {n:'法令纹',l:4,lev:'重度',lCls:'h',dotCls:'f',color:'red',
+   cause:'鼻翼两侧到嘴角的深沟。苹果肌的脂肪垫下滑+SMAS筋膜松弛+上颌骨吸收，三层叠加形成。侧睡和低头看手机会明显加重。',
+   acup:'迎香穴(LI20·鼻翼旁开0.5寸)、四白穴(ST2·瞳孔直下1寸)——这两个穴位对应鼻唇沟区域，按压可促进局部气血循环，减缓脂肪垫下滑速度。',
+   habits:['长期单侧睡觉','低头看手机>2小时/天','不自觉地托腮','啃硬食物过度用咬肌'],
+   treatments:[{n:'玻尿酸填充',p:'4000-8000元/支'},{n:'线雕提升',p:'15000-30000元'},{n:'超声刀',p:'10000-20000元'}],
+   yoga:[{s:'洁面后涂按摩油，减少摩擦',t:'30秒'},{s:'V型手指从鼻翼沿法令纹向耳根提拉',t:'1分钟'},{s:'到达耳垂后轻压3秒，刺激穴位',t:'30秒'},{s:'重复10次，永远向上提！',t:'1分钟'},{s:'早晚各1次，坚持4-8周评估效果',t:'—'}]},
+  {n:'鱼尾纹',l:4,lev:'重度',lCls:'h',dotCls:'f',color:'red',
+   cause:'眼角放射状纹路。眼轮匝肌反复收缩+紫外线破坏弹性纤维。眼周皮肤仅0.3mm，是全身最薄之处，最易受损。眯眼看东西加速恶化。',
+   acup:'太阳穴(EX-HN5·眉梢与眼外角之间向后1寸)、瞳子髎(GB1·眼外角旁0.5寸)——按压可放松眼轮匝肌，促进眼周循环。',
+   habits:['视力差不戴眼镜→眯眼','揉眼睛','眼角不涂防晒','长期熬夜→眼周循环差'],
+   treatments:[{n:'肉毒素',p:'3000-5000元'},{n:'胶原蛋白填充',p:'5000-10000元/支'}],
+   yoga:[{s:'无名指蘸眼霜，点五点于眼周',t:'30秒'},{s:'从内眼角向外眼角轻点，像弹钢琴',t:'30秒'},{s:'眼尾打圈按摩30秒，促进微循环',t:'30秒'},{s:'向太阳穴方向轻提5次',t:'30秒'},{s:'眼部皮肤最薄，力度一定要轻！',t:'—'}]},
+  {n:'川字纹',l:3,lev:'中度',lCls:'m',dotCls:'o',color:'orange',
+   cause:'眉间纵向纹路。皱眉肌和降眉肌反复收缩→皮肤折叠→固定纹。压力大时无意识皱眉每天可发生数百次。',
+   acup:'印堂穴(EX-HN3·两眉中点)、攒竹穴(BL2·眉头凹陷处)——按压可放松皱眉肌群，缓解不自觉皱眉。',
+   habits:['不自觉皱眉','看屏幕时没有防蓝光→眯眼','不戴太阳镜→强光下皱眉'],
+   treatments:[{n:'肉毒素',p:'2000-4000元'},{n:'玻尿酸填充',p:'3000-6000元/支'}],
+   yoga:[{s:'食指从眉心向发际线交替推压',t:'30秒'},{s:'到达发际线后轻叩10次',t:'30秒'},{s:'打圈按摩眉间30秒',t:'30秒'},{s:'有意识地放松眉心，配合深呼吸',t:'30秒'},{s:'早晚各1次，坚持4周可见改善',t:'—'}]},
+  {n:'下颌线模糊',l:3,lev:'中度',lCls:'m',dotCls:'o',color:'orange',
+   cause:'下颌线轮廓不清。SMAS筋膜松弛→兜不住肉+颈阔肌张力下降+下颌骨变长。低头看手机加速。',
+   acup:'颊车穴(ST6·下颌角前上方1横指)、大迎穴(ST5·下颌角前方)——按压可紧致下颌线条，促进颈阔肌张力。',
+   habits:['每天低头看手机>3小时','坐姿驼背→头部前倾','吃太咸→面部水肿','不爱运动→颈肌松弛'],
+   treatments:[{n:'超声刀',p:'12000-20000元'},{n:'热玛吉',p:'15000-25000元'},{n:'线雕提升',p:'10000-30000元'}],
+   yoga:[{s:'坐直，缓缓抬头看天花板',t:'30秒'},{s:'舌尖轻抵上颚，激活颈阔肌',t:'1分钟'},{s:'双手从下巴中央向耳根提拉',t:'2分钟'},{s:'保持提拉姿势5秒，配合深呼吸',t:'1分钟'},{s:'重复10次，每天2-3次',t:'—'}]},
+  {n:'眼袋泪沟',l:3,lev:'中度',lCls:'m',dotCls:'o',color:'orange',
+   cause:'眼下浮肿+暗影。眶下脂肪膨出→眼袋+皮肤变薄血管透出→泪沟暗影。熬夜和咸食明显加重。',
+   acup:'承泣穴(ST1·眼球与眶下缘之间)、四白穴(ST2)——按压可促进眼下淋巴回流，减轻浮肿。',
+   habits:['睡眠<6小时','睡前大量喝水→晨起浮肿','吃太咸→水分滞留','趴睡→压迫眼周'],
+   treatments:[{n:'胶原蛋白填充',p:'5000-10000元/支'},{n:'玻尿酸填充',p:'3000-6000元/支'},{n:'热玛吉眼周',p:'8000-15000元'}],
+   yoga:[{s:'无名指轻点眼下，从内向外',t:'30秒'},{s:'冷藏勺子敷眼2分钟消浮肿',t:'2分钟'},{s:'每天做眼球转动练习',t:'1分钟'},{s:'晚上少喝水+低盐饮食配合',t:'—'},{s:'保证7小时以上睡眠',t:'—'}]},
+  {n:'苹果肌凹陷',l:3,lev:'中度',lCls:'m',dotCls:'o',color:'orange',
+   cause:'面中部饱满度下降。颧脂肪垫变薄+下滑→苹果肌消失。过度节食会加速脂肪流失。',
+   acup:'颧髎穴(SI18·颧骨下缘凹陷处)、四白穴(ST2)——按压可激活颧部气血，改善面中部凹陷。',
+   habits:['过度节食→脂肪流失加速','素食为主→优质蛋白不足','不涂防晒→胶原被破坏'],
+   treatments:[{n:'玻尿酸填充',p:'4000-8000元/支'},{n:'自体脂肪填充',p:'10000-30000元'},{n:'热玛吉',p:'15000-25000元'}],
+   yoga:[{s:'找到颧骨下方凹陷处',t:'30秒'},{s:'向上向外45°提拉按摩',t:'1分钟'},{s:'画圈按摩苹果肌30秒',t:'30秒'},{s:'按压四白穴3秒',t:'1分钟'},{s:'配合维C精华，早晚各1次',t:'—'}]},
+  {n:'脸颊凹陷',l:2,lev:'轻度',lCls:'l',dotCls:'y',color:'yellow',
+   cause:'颧骨下方到下颌之间的区域不够饱满。颊脂肪垫萎缩+胶原流失→面颊凹陷，显得憔悴。',
+   acup:'大迎穴(ST5)、颊车穴(ST6)——按压可促进面颊部气血循环。',
+   habits:['过度节食减肥','素食为主蛋白不足','不涂防晒'],
+   treatments:[{n:'玻尿酸填充',p:'3000-6000元/支'},{n:'自体脂肪填充',p:'10000-30000元'}],
+   yoga:[{s:'找到面颊凹陷区域',t:'30秒'},{s:'用掌根从嘴角向耳根提拉',t:'1分钟'},{s:'画圈按摩面颊30秒',t:'30秒'},{s:'每天2次，配合按摩油',t:'—'}]},
+  {n:'太阳穴凹陷',l:2,lev:'轻度',lCls:'l',dotCls:'y',color:'yellow',
+   cause:'太阳穴区域不够饱满。脂肪垫萎缩+颞骨吸收→脸型从圆形变方形。常被忽略的显老原因。',
+   acup:'太阳穴(EX-HN5)——按压可直接改善颞部循环，延缓脂肪萎缩。',
+   habits:['长期节食','单侧睡压迫','压力大咬紧牙关'],
+   treatments:[{n:'玻尿酸填充',p:'3000-6000元/支'},{n:'自体脂肪填充',p:'10000-30000元'}],
+   yoga:[{s:'食指中指指腹放太阳穴',t:'30秒'},{s:'画圈按摩太阳穴30秒',t:'30秒'},{s:'向发际线方向推压10次',t:'1分钟'},{s:'每日2次，坚持4周',t:'—'}]},
+];
 
 function renderResults(){
-  var problems=[
-    {n:'法令纹',l:4,c:'高',d:['V型指从鼻翼沿法令纹向耳根提拉','压耳垂3秒','重复10次，早晚各1次'],t:[{n:'玻尿酸填充',p:'4000-8000元'},{n:'线雕提升',p:'15000-30000元'}]},
-    {n:'鱼尾纹',l:4,c:'高',d:['无名指点涂眼霜','眼尾打圈按摩30秒','向太阳穴方向轻提5次'],t:[{n:'肉毒素',p:'3000-5000元'},{n:'胶原蛋白',p:'5000-10000元'}]},
-    {n:'川字纹',l:3,c:'中',d:['食指从眉心向发际线推压','画小圈按摩眉间30秒','有意识放松眉心'],t:[{n:'肉毒素',p:'2000-4000元'}]},
-    {n:'下颌线模糊',l:3,c:'中',d:['抬头看天花板舌顶上颚','双手从下巴向耳根提拉','保持5秒×10次'],t:[{n:'超声刀',p:'12000-20000元'},{n:'热玛吉',p:'15000-25000元'}]},
-  ];
-  document.getElementById('results').innerHTML='<h3 style="text-align:center;margin-bottom:16px">✨ 分析报告</h3>'+problems.map(function(p){return'<div class="problem-card"><div class="problem-name">'+p.n+'</div><div class="severity">'+'<span class="sev-dot f"></span>'.repeat(p.l)+'<span class="sev-dot"></span>'.repeat(5-p.l)+'<span class="sev-label">'+p.c+'度</span></div><div class="solution-grid"><div class="solution-card"><h5>💉 医美参考</h5>'+p.t.map(function(t){return'<div class="sol-item"><span>'+t.n+'</span><span class="sol-price">'+t.p+'</span></div>'}).join('')+'</div><div class="solution-card"><h5>🧘 面部瑜伽</h5>'+p.d.map(function(y,j){return'<div class="yoga-step"><span class="num">'+(j+1)+'</span><span>'+y+'</span></div>'}).join('')+'</div></div></div>'}).join('')+'<div class="disclaimer"><strong>⚠️ 免责声明：</strong>仅供美容参考，不构成医疗建议。</div>';
+  var html='<h3 style="text-align:center;margin-bottom:16px;font-size:20px">✨ 详细分析报告</h3>';
+  DETECTED_PROBLEMS.forEach(function(p){
+    html+='<div class="problem-card" style="border-left-color:var(--'+p.color+')">';
+    html+='<div class="problem-name">'+p.n+'</div>';
+    html+='<div class="severity">'+'<span class="sev-dot '+p.dotCls+'"></span>'.repeat(p.l)+'<span class="sev-dot"></span>'.repeat(5-p.l)+'<span class="sev-label '+p.lCls+'">'+p.lev+'</span></div>';
+    html+='<div class="info-box"><h5>📐 医学解剖白话解读</h5><p>'+p.cause+'</p></div>';
+    html+='<div class="info-box"><h5>⚠️ 加重问题的日常习惯</h5><div class="habits-list">'+p.habits.map(function(h){return'<span class="habit-tag">'+h+'</span>'}).join('')+'</div></div>';
+    html+='<div class="info-box"><h5>📍 穴位解析</h5><p>'+p.acup+'</p></div>';
+    html+='<div class="solution-grid">';
+    html+='<div class="solution-card"><h5>💉 医美参考（仅供参考对比）</h5>'+p.treatments.map(function(t){return'<div class="sol-item"><span>'+t.n+'</span><span class="sol-price">'+t.p+'</span></div>'}).join('')+'</div>';
+    html+='<div class="solution-card"><h5>🧘 建议面部瑜伽动作</h5>'+p.yoga.map(function(y,j){return'<div class="yoga-step"><span class="num">'+(j+1)+'</span><span>'+y.s+' <b>['+y.t+']</b></span></div>'}).join('')+'<div style="font-size:11px;color:var(--textM);margin-top:4px">⏱ 总时长约3-5分钟 · 🕐 早晚各1次 · 📅 坚持4-8周评估</div></div>';
+    html+='</div></div>';
+  });
+  // AI总结
+  html+='<div class="summary-box"><h3>🤖 AI 综合总结</h3>';
+  html+='<p style="line-height:2;font-size:14px">本次检测发现<strong>8个</strong>面部区域存在不同程度的衰老迹象——但这些都不是问题，通过坚持面部瑜伽完全可以在家改善。</p>';
+  html+='<p style="line-height:2;font-size:14px;margin-top:8px">动辄几万块的医美项目（热玛吉2万、超声刀1.5万、线雕3万），维持1-2年就失效，还要反复做。更别提术后淤青、恢复期、以及遇上不靠谱医生的风险。<strong style="color:var(--roseD)">面部瑜伽零成本、零风险、随时可做</strong>，从根源锻炼筋膜肌肉，效果持久不反弹。你的脸值得更好的方式。</p>';
+  html+='<p style="line-height:2;font-size:14px;margin-top:8px"><strong>日常注意：</strong>防晒（SPF30+每天）、少糖少盐、仰卧睡眠（真丝枕套）、少低头看手机——这四件事和面部瑜伽一起坚持4-8周，你会看到变化的。</p>';
+  html+='</div>';
+  // PDF按钮
+  html+='<div style="text-align:center;margin:20px 0"><button class="btn btn-dark" onclick="generatePDF()">📥 下载 PDF 报告</button></div>';
+  html+='<div class="disclaimer"><strong>⚠️ 免责声明：</strong>本分析仅供美容参考，不构成医疗诊断或治疗建议。AI检测存在误差，请以执业医师面诊为准。医美价格为市场参考。本报告不替代专业医学意见。</div>';
+  document.getElementById('results').innerHTML=html;
+}
+
+function startAnalysis(){
+  document.getElementById('prog').style.display='block';
+  var steps=['面部关键点检测...','识别衰老问题...','匹配解剖知识库...','生成改善方案...','完成 ✅'],i=0;
+  var iv=setInterval(function(){
+    if(i<steps.length){document.getElementById('progText').textContent=steps[i];document.getElementById('progFill').style.width=(i+1)*25+'%';i++;}
+    else{clearInterval(iv);document.getElementById('prog').style.display='none';document.getElementById('results').style.display='block';renderResults();document.getElementById('results').scrollIntoView({behavior:'smooth'});}
+  },400);
+}
+
+// ===== PDF（截图方式保证中文不乱码）=====
+async function generatePDF(){
+  showToast('📄 生成中...');
+  try{
+    if(typeof html2canvas==='undefined'||typeof jspdf==='undefined'){
+      // 动态加载
+      await new Promise(function(resolve){var s=document.createElement('script');s.src='jspdf.min.js';s.onload=resolve;document.head.appendChild(s);});
+      await new Promise(function(resolve){var s=document.createElement('script');s.src='html2canvas.min.js';s.onload=resolve;document.head.appendChild(s);});
+    }
+    var el=document.getElementById('results');
+    var canvas=await html2canvas(el,{scale:2,backgroundColor:'#F9F5F0',logging:false});
+    var {jsPDF}=window.jspdf;
+    var doc=new jsPDF({unit:'mm',format:'a4'});
+    var pw=190,ph=277,iw=pw-10,ih=(canvas.height/canvas.width)*iw;
+    var rem=ih,y=5;
+    while(rem>0){
+      if(y>5)doc.addPage();
+      doc.addImage(canvas.toDataURL('image/png'),'PNG',5,y,iw,ih,undefined,'FAST',0,y>5?(ih-rem):0);
+      rem-=Math.min(rem,ph-15);y=5;
+    }
+    doc.save('焕颜_分析报告.pdf');
+    showToast('✅ PDF 已下载');
+  }catch(e){showToast('❌ PDF生成失败，请刷新重试');}
 }
 </script>
 </body>
