@@ -591,28 +591,54 @@ function showToast(m){const t=document.getElementById('toast');t.textContent=m;t
 async function generatePDF(){
   showToast('📄 生成中...');
   try {
-    if(!window.html2canvas){throw new Error('html2canvas 未加载');}
-    if(!window.jspdf){throw new Error('jspdf 未加载');}
-    
-    const el = document.getElementById('analysisSection');
-    const canvas = await html2canvas(el, {scale:2,useCORS:true,backgroundColor:'#FAF7F2',logging:false});
-    
-    const {jsPDF} = window.jspdf;
-    const imgData = canvas.toDataURL('image/png');
-    const pageW=190,pageH=277,imgW=pageW-10,imgH=(canvas.height/canvas.width)*imgW;
-    const doc = new jsPDF({unit:'mm',format:'a4'});
-    let remainingH=imgH,y=5;
-    while(remainingH>0){
-      if(y>5)doc.addPage();
-      doc.addImage(imgData,'PNG',5,y,imgW,imgH,undefined,'FAST',0,y>5?(imgH-remainingH):0);
-      remainingH-=Math.min(remainingH,pageH-15);y=5;
+    if(!window.html2canvas||!window.jspdf){throw new Error('库未加载');}
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({unit:'mm',format:'a4'});
+    const pageW=190,pageH=277;
+
+    async function addSection(el,yPos){
+      const canvas=await html2canvas(el,{scale:2,useCORS:true,backgroundColor:'#FAF7F2',logging:false});
+      const imgData=canvas.toDataURL('image/png');
+      const imgW=pageW-10,imgH=(canvas.height/canvas.width)*imgW;
+      let y=yPos,rem=imgH;
+      while(rem>0){
+        if(y>5)doc.addPage();
+        doc.addImage(imgData,'PNG',5,y,imgW,imgH,undefined,'FAST',0,y>5?(imgH-rem):0);
+        rem-=Math.min(rem,pageH-15);y=5;
+      }
+      return 5; // next start position
     }
-    doc.save('焕颜_面部衰老分析报告.pdf');
+
+    // 1. 原图 + 标注 + 改善效果
+    const previewArea=document.getElementById('previewArea');
+    if(previewArea.classList.contains('active')){
+      await addSection(previewArea,5);
+    }
+
+    // 2. 详细分析报告 + AI总结
+    const analysisEl=document.getElementById('analysisSection');
+    if(analysisEl.style.display!=='none'){
+      doc.addPage();
+      await addSection(analysisEl,5);
+    }
+
+    // 3. 面部瑜伽知识库
+    const yogaTab=document.getElementById('tab-yoga');
+    if(yogaTab){
+      const origActive=yogaTab.classList.contains('active');
+      if(!origActive){yogaTab.classList.add('active');yogaTab.style.display='block';}
+      doc.addPage();
+      // Add title
+      doc.setFontSize(16);doc.setTextColor(184,112,112);
+      doc.text('🧘 面部瑜伽知识库',14,14);
+      doc.setTextColor(45);
+      await addSection(yogaTab,22);
+      if(!origActive){yogaTab.classList.remove('active');yogaTab.style.display='none';}
+    }
+
+    doc.save('焕颜_全面分析报告.pdf');
     showToast('✅ PDF 已下载');
-  } catch(e) {
-    showToast('❌ ' + e.message);
-  }
-}
+  }catch(e){showToast('❌ '+e.message);}
 </script>
 </body>
 </html>
