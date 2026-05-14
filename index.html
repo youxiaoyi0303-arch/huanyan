@@ -492,7 +492,7 @@ function renderResults(){
   html+='<p style="line-height:2;font-size:14px;margin-top:8px"><strong>为什么不做医美？</strong>热玛吉2万、超声刀1.5万、线雕3万——维持1-2年又要重来，术后还有淤青恢复期。面部瑜伽<strong style="color:var(--roseD)">零成本、零风险、随时可做</strong>，从根源锻炼筋膜肌肉，效果持久不反弹。</p>';
   html+='<p style="line-height:2;font-size:14px;margin-top:8px"><strong>日常重点：</strong>防晒SPF30+每天、少糖少盐、仰卧+真丝枕套、少低头看手机。这四件事配合每日面部瑜伽，坚持4-8周拍照对比——你会感谢今天的自己。</p>';
   html+='</div>';
-  html+='<div style="text-align:center;margin:20px 0"><button class="btn btn-dark" onclick="generatePDF()">📥 下载 PDF 报告</button></div>';
+  html+='<div style="text-align:center;margin:20px 0"><button class="btn btn-dark" onclick="generatePDF()">📥 下载完整长图（PNG）</button></div>';
   html+='<div class="disclaimer"><strong>⚠️ 免责声明：</strong>本分析仅供美容参考，不构成医疗诊断或治疗建议。AI检测存在误差，请以执业医师面诊为准。医美价格为市场参考。本报告不替代专业医学意见。</div>';
   document.getElementById('results').innerHTML=html;
 }
@@ -506,71 +506,62 @@ function startAnalysis(){
   },400);
 }
 
-// ===== PDF（截图方式保证中文不乱码）=====
+// ===== 生成长图（中文无乱码）=====
+function getPhotoThumbs(){
+  if(!uploadedImage)return '';
+  var thumbW=240,thumbH=Math.round(thumbW*uploadedImage.height/uploadedImage.width);
+  var oc=document.createElement('canvas');oc.width=thumbW;oc.height=thumbH;
+  oc.getContext('2d').drawImage(uploadedImage,0,0,thumbW,thumbH);
+  var oSrc=oc.toDataURL('image/jpeg',0.88);
+  var ac=document.createElement('canvas');ac.width=thumbW;ac.height=thumbH;
+  var ax=ac.getContext('2d');ax.drawImage(uploadedImage,0,0,thumbW,thumbH);
+  if(window.faceDetection){
+    var lm=window.faceDetection.landmarks.positions;
+    var sx=thumbW/uploadedImage.width,sy=thumbH/uploadedImage.height;
+    lm.forEach(function(p){ax.fillStyle='#E05555';ax.beginPath();ax.arc(p.x*sx,p.y*sy,3,0,Math.PI*2);ax.fill();ax.strokeStyle='#fff';ax.lineWidth=1;ax.stroke();});
+  }
+  var aSrc=ac.toDataURL('image/jpeg',0.88);
+  return '<div style="display:flex;gap:16px;justify-content:center;margin-bottom:16px;flex-wrap:wrap"><div style="text-align:center;flex:0 0 auto"><img src="'+oSrc+'" style="max-width:280px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12)"><div style="font-size:12px;color:#6B5E5E;margin-top:6px">📷 原图</div></div><div style="text-align:center;flex:0 0 auto"><img src="'+aSrc+'" style="max-width:280px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12)"><div style="font-size:12px;color:#6B5E5E;margin-top:6px">🔍 关键点标注</div></div></div>';
+}
+
 async function generatePDF(){
-  showToast('📄 生成中...');
+  showToast('📄 生成长图中...');
   try{
-    if(typeof html2canvas==='undefined'||typeof jspdf==='undefined'){
-      await new Promise(function(resolve){var s=document.createElement('script');s.src='jspdf.min.js';s.onload=resolve;document.head.appendChild(s);});
+    if(typeof html2canvas==='undefined'){
       await new Promise(function(resolve){var s=document.createElement('script');s.src='html2canvas.min.js';s.onload=resolve;document.head.appendChild(s);});
     }
-    var {jsPDF}=window.jspdf;var doc=new jsPDF({unit:'mm',format:'a4'});
-    var pw=190,ph=277;
-    // 在 results 顶部插入照片缩略图（临时）
+    // 构建长图容器
+    var wrap=document.createElement('div');
+    wrap.style.cssText='position:fixed;left:-9999px;top:0;width:680px;padding:20px;background:#F9F5F0;font-family:-apple-system,PingFang SC,Microsoft YaHei,sans-serif;color:#2d2d2d;z-index:99999';
+    document.body.appendChild(wrap);
+
+    // 标题
+    var h='<div style="text-align:center;padding:8px 0 16px"><h2 style="color:#B87070;margin:0;font-size:22px">✨ 焕颜 AI 面部分析报告</h2><p style="color:#9B8B8B;font-size:13px;margin:6px 0 0">'+new Date().toLocaleDateString('zh-CN')+' · 全页面分析</p></div>';
+
+    // 照片
+    h+=getPhotoThumbs();
+
+    // 分析报告（克隆 results 的内容）
     var results=document.getElementById('results');
-    if(results.style.display==='none'){showToast('⚠️ 请先完成分析');return;}
-    var thumbHTML='';
-    if(uploadedImage){
-      var thumbW=160,thumbH=Math.round(thumbW*uploadedImage.height/uploadedImage.width);
-      var oc=document.createElement('canvas');oc.width=thumbW;oc.height=thumbH;
-      oc.getContext('2d').drawImage(uploadedImage,0,0,thumbW,thumbH);
-      var origSrc=oc.toDataURL('image/jpeg',0.85);
-      var ac=document.createElement('canvas');ac.width=thumbW;ac.height=thumbH;
-      var actx=ac.getContext('2d');actx.drawImage(uploadedImage,0,0,thumbW,thumbH);
-      if(window.faceDetection){
-        var lm=window.faceDetection.landmarks.positions;
-        var scX=thumbW/uploadedImage.width,scY=thumbH/uploadedImage.height;
-        lm.forEach(function(p){actx.fillStyle='#E05555';actx.beginPath();actx.arc(p.x*scX,p.y*scY,2,0,Math.PI*2);actx.fill();actx.strokeStyle='#fff';actx.lineWidth=0.5;actx.stroke();});
-      }
-      var annoSrc=ac.toDataURL('image/jpeg',0.85);
-      thumbHTML='<div style="display:flex;gap:12px;justify-content:center;margin-bottom:1em;flex-wrap:wrap">'+
-        '<div style="text-align:center"><img src="'+origSrc+'" style="max-width:150px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1)"><div style="font-size:11px;color:#6B5E5E">📷 原图</div></div>'+
-        '<div style="text-align:center"><img src="'+annoSrc+'" style="max-width:150px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1)"><div style="font-size:11px;color:#6B5E5E">🔍 问题标注</div></div>'+
-        '</div>';
+    h+='<div style="margin-top:20px">'+results.innerHTML+'</div>';
+
+    // 分隔 + 瑜伽知识库
+    var yoga=document.getElementById('tab-yoga');
+    if(yoga){
+      h+='<div style="margin:20px 0;border-top:2px solid #E8DDD5;padding-top:16px"><h3 style="text-align:center;color:#B87070;font-size:18px">🧘 面部瑜伽知识库</h3>'+yoga.innerHTML+'</div>';
     }
-    var origHTML=results.innerHTML;
-    results.innerHTML=thumbHTML+origHTML;
-    // 截图分析报告
-    var c1=await html2canvas(results,{scale:2,backgroundColor:'#F9F5F0',logging:false});
-    results.innerHTML=origHTML;
-    // 截图瑜伽知识库
-    var yogaTab=document.getElementById('tab-yoga'),yogaCanvas=null;
-    if(yogaTab){
-      var wasHidden=yogaTab.style.display==='none';
-      if(wasHidden){yogaTab.style.display='block';yogaTab.classList.add('active');}
-      yogaCanvas=await html2canvas(yogaTab,{scale:2,backgroundColor:'#F9F5F0',logging:false});
-      if(wasHidden){yogaTab.style.display='none';yogaTab.classList.remove('active');}
-    }
-    // 生成两页 PDF
-    [c1,yogaCanvas].forEach(function(canvas,idx){
-      if(!canvas)return;
-      var titles=['📋 面部分析报告 & AI综合总结','🧘 面部瑜伽知识库'];
-      var iw=pw-10,ih=(canvas.height/canvas.width)*iw;
-      var y=5;
-      doc.addPage();
-      doc.setFontSize(14);doc.setTextColor(184,112,112);doc.text(titles[idx],10,12);doc.setTextColor(45);
-      y=18;
-      var rem=ih;
-      while(rem>0){
-        var sliceH=Math.min(rem,ph-20);
-        if(y>18)doc.addPage();
-        doc.addImage(canvas.toDataURL('image/png'),'PNG',5,y,iw,ih,undefined,'FAST',0,y>18?(ih-rem):0);
-        rem-=sliceH;y=5;
-      }
-    });
-    doc.deletePage(1); // 删掉初始空白页
-    doc.save('焕颜_全面分析报告.pdf');
-    showToast('✅ PDF 已下载（含分析报告+瑜伽知识库）');
+
+    h+='<div style="text-align:center;padding:16px 0 4px;font-size:11px;color:#C0B0B0">焕颜 v2 · 零成本面部瑜伽 · 医美太贵不值得</div>';
+    wrap.innerHTML=h;
+
+    // 截图 + 下载
+    var canvas=await html2canvas(wrap,{scale:2,backgroundColor:'#F9F5F0',logging:false,useCORS:true,allowTaint:true});
+    document.body.removeChild(wrap);
+    var link=document.createElement('a');
+    link.download='焕颜_全面分析报告.png';
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    showToast('✅ 长图已下载（含全部内容，无乱码）');
   }catch(e){showToast('❌ '+e.message);}
 }
 </script>
