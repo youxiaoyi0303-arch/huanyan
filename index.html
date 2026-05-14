@@ -308,8 +308,11 @@ function drawAnnotated(d){
 
 function drawImproved(d){
   var c=document.getElementById('c3');var s=Math.min((c.parentElement.clientWidth-4)/uploadedImage.width,1);c.width=uploadedImage.width*s;c.height=uploadedImage.height*s;var ctx=c.getContext('2d');
-  ctx.filter='brightness(1.12) contrast(0.90) saturate(1.08) blur(1.2px)';
+  // 两层渲染：底层提亮去纹，上层原图叠回保留五官
+  ctx.filter='brightness(1.15) contrast(0.92) saturate(1.06)';
   ctx.drawImage(uploadedImage,0,0,c.width,c.height);ctx.filter='none';
+  // 叠回原图40%保留细节
+  ctx.globalAlpha=0.40;ctx.drawImage(uploadedImage,0,0,c.width,c.height);ctx.globalAlpha=1;
 }
 
 async function handleFile(e){
@@ -334,60 +337,107 @@ async function handleFile(e){
 }
 
 // ===== 详细分析报告 =====
-var DETECTED_PROBLEMS=[
-  {n:'法令纹',l:4,lev:'重度',lCls:'h',dotCls:'f',color:'red',
-   cause:'鼻翼两侧到嘴角的深沟。苹果肌的脂肪垫下滑+SMAS筋膜松弛+上颌骨吸收，三层叠加形成。侧睡和低头看手机会明显加重。',
-   acup:'迎香穴(LI20·鼻翼旁开0.5寸)、四白穴(ST2·瞳孔直下1寸)——这两个穴位对应鼻唇沟区域，按压可促进局部气血循环，减缓脂肪垫下滑速度。',
-   habits:['长期单侧睡觉','低头看手机>2小时/天','不自觉地托腮','啃硬食物过度用咬肌'],
-   treatments:[{n:'玻尿酸填充',p:'4000-8000元/支'},{n:'线雕提升',p:'15000-30000元'},{n:'超声刀',p:'10000-20000元'}],
-   yoga:[{s:'洁面后涂按摩油，减少摩擦',t:'30秒'},{s:'V型手指从鼻翼沿法令纹向耳根提拉',t:'1分钟'},{s:'到达耳垂后轻压3秒，刺激穴位',t:'30秒'},{s:'重复10次，永远向上提！',t:'1分钟'},{s:'早晚各1次，坚持4-8周评估效果',t:'—'}]},
-  {n:'鱼尾纹',l:4,lev:'重度',lCls:'h',dotCls:'f',color:'red',
-   cause:'眼角放射状纹路。眼轮匝肌反复收缩+紫外线破坏弹性纤维。眼周皮肤仅0.3mm，是全身最薄之处，最易受损。眯眼看东西加速恶化。',
-   acup:'太阳穴(EX-HN5·眉梢与眼外角之间向后1寸)、瞳子髎(GB1·眼外角旁0.5寸)——按压可放松眼轮匝肌，促进眼周循环。',
-   habits:['视力差不戴眼镜→眯眼','揉眼睛','眼角不涂防晒','长期熬夜→眼周循环差'],
-   treatments:[{n:'肉毒素',p:'3000-5000元'},{n:'胶原蛋白填充',p:'5000-10000元/支'}],
-   yoga:[{s:'无名指蘸眼霜，点五点于眼周',t:'30秒'},{s:'从内眼角向外眼角轻点，像弹钢琴',t:'30秒'},{s:'眼尾打圈按摩30秒，促进微循环',t:'30秒'},{s:'向太阳穴方向轻提5次',t:'30秒'},{s:'眼部皮肤最薄，力度一定要轻！',t:'—'}]},
-  {n:'川字纹',l:3,lev:'中度',lCls:'m',dotCls:'o',color:'orange',
-   cause:'眉间纵向纹路。皱眉肌和降眉肌反复收缩→皮肤折叠→固定纹。压力大时无意识皱眉每天可发生数百次。',
-   acup:'印堂穴(EX-HN3·两眉中点)、攒竹穴(BL2·眉头凹陷处)——按压可放松皱眉肌群，缓解不自觉皱眉。',
-   habits:['不自觉皱眉','看屏幕时没有防蓝光→眯眼','不戴太阳镜→强光下皱眉'],
-   treatments:[{n:'肉毒素',p:'2000-4000元'},{n:'玻尿酸填充',p:'3000-6000元/支'}],
-   yoga:[{s:'食指从眉心向发际线交替推压',t:'30秒'},{s:'到达发际线后轻叩10次',t:'30秒'},{s:'打圈按摩眉间30秒',t:'30秒'},{s:'有意识地放松眉心，配合深呼吸',t:'30秒'},{s:'早晚各1次，坚持4周可见改善',t:'—'}]},
-  {n:'下颌线模糊',l:3,lev:'中度',lCls:'m',dotCls:'o',color:'orange',
-   cause:'下颌线轮廓不清。SMAS筋膜松弛→兜不住肉+颈阔肌张力下降+下颌骨变长。低头看手机加速。',
-   acup:'颊车穴(ST6·下颌角前上方1横指)、大迎穴(ST5·下颌角前方)——按压可紧致下颌线条，促进颈阔肌张力。',
-   habits:['每天低头看手机>3小时','坐姿驼背→头部前倾','吃太咸→面部水肿','不爱运动→颈肌松弛'],
-   treatments:[{n:'超声刀',p:'12000-20000元'},{n:'热玛吉',p:'15000-25000元'},{n:'线雕提升',p:'10000-30000元'}],
-   yoga:[{s:'坐直，缓缓抬头看天花板',t:'30秒'},{s:'舌尖轻抵上颚，激活颈阔肌',t:'1分钟'},{s:'双手从下巴中央向耳根提拉',t:'2分钟'},{s:'保持提拉姿势5秒，配合深呼吸',t:'1分钟'},{s:'重复10次，每天2-3次',t:'—'}]},
-  {n:'眼袋泪沟',l:3,lev:'中度',lCls:'m',dotCls:'o',color:'orange',
-   cause:'眼下浮肿+暗影。眶下脂肪膨出→眼袋+皮肤变薄血管透出→泪沟暗影。熬夜和咸食明显加重。',
-   acup:'承泣穴(ST1·眼球与眶下缘之间)、四白穴(ST2)——按压可促进眼下淋巴回流，减轻浮肿。',
-   habits:['睡眠<6小时','睡前大量喝水→晨起浮肿','吃太咸→水分滞留','趴睡→压迫眼周'],
-   treatments:[{n:'胶原蛋白填充',p:'5000-10000元/支'},{n:'玻尿酸填充',p:'3000-6000元/支'},{n:'热玛吉眼周',p:'8000-15000元'}],
-   yoga:[{s:'无名指轻点眼下，从内向外',t:'30秒'},{s:'冷藏勺子敷眼2分钟消浮肿',t:'2分钟'},{s:'每天做眼球转动练习',t:'1分钟'},{s:'晚上少喝水+低盐饮食配合',t:'—'},{s:'保证7小时以上睡眠',t:'—'}]},
-  {n:'苹果肌凹陷',l:3,lev:'中度',lCls:'m',dotCls:'o',color:'orange',
-   cause:'面中部饱满度下降。颧脂肪垫变薄+下滑→苹果肌消失。过度节食会加速脂肪流失。',
-   acup:'颧髎穴(SI18·颧骨下缘凹陷处)、四白穴(ST2)——按压可激活颧部气血，改善面中部凹陷。',
-   habits:['过度节食→脂肪流失加速','素食为主→优质蛋白不足','不涂防晒→胶原被破坏'],
-   treatments:[{n:'玻尿酸填充',p:'4000-8000元/支'},{n:'自体脂肪填充',p:'10000-30000元'},{n:'热玛吉',p:'15000-25000元'}],
-   yoga:[{s:'找到颧骨下方凹陷处',t:'30秒'},{s:'向上向外45°提拉按摩',t:'1分钟'},{s:'画圈按摩苹果肌30秒',t:'30秒'},{s:'按压四白穴3秒',t:'1分钟'},{s:'配合维C精华，早晚各1次',t:'—'}]},
-  {n:'脸颊凹陷',l:2,lev:'轻度',lCls:'l',dotCls:'y',color:'yellow',
-   cause:'颧骨下方到下颌之间的区域不够饱满。颊脂肪垫萎缩+胶原流失→面颊凹陷，显得憔悴。',
-   acup:'大迎穴(ST5)、颊车穴(ST6)——按压可促进面颊部气血循环。',
-   habits:['过度节食减肥','素食为主蛋白不足','不涂防晒'],
-   treatments:[{n:'玻尿酸填充',p:'3000-6000元/支'},{n:'自体脂肪填充',p:'10000-30000元'}],
-   yoga:[{s:'找到面颊凹陷区域',t:'30秒'},{s:'用掌根从嘴角向耳根提拉',t:'1分钟'},{s:'画圈按摩面颊30秒',t:'30秒'},{s:'每天2次，配合按摩油',t:'—'}]},
-  {n:'太阳穴凹陷',l:2,lev:'轻度',lCls:'l',dotCls:'y',color:'yellow',
-   cause:'太阳穴区域不够饱满。脂肪垫萎缩+颞骨吸收→脸型从圆形变方形。常被忽略的显老原因。',
-   acup:'太阳穴(EX-HN5)——按压可直接改善颞部循环，延缓脂肪萎缩。',
-   habits:['长期节食','单侧睡压迫','压力大咬紧牙关'],
-   treatments:[{n:'玻尿酸填充',p:'3000-6000元/支'},{n:'自体脂肪填充',p:'10000-30000元'}],
-   yoga:[{s:'食指中指指腹放太阳穴',t:'30秒'},{s:'画圈按摩太阳穴30秒',t:'30秒'},{s:'向发际线方向推压10次',t:'1分钟'},{s:'每日2次，坚持4周',t:'—'}]},
-];
+// ===== 动态面部分析引擎 =====
+function analyzeFace(d){
+  if(!d)return getDefaultProblems();
+  var lm=d.landmarks.positions,p=[],mid=(lm[27].x+lm[30].x)/2;
+  var lJ=Math.abs(lm[4].x-mid),rJ=Math.abs(lm[12].x-mid);
+  var jawAsym=lJ/rJ>1.08||rJ/lJ>1.08;
+  var eyeDropL=lm[39].y-lm[36].y,eyeDropR=lm[42].y-lm[45].y;
+  var mouthAsym=Math.abs(lm[48].y-lm[54].y)>5;
+  var cheekL=Math.abs(lm[3].y-lm[48].y)/Math.abs(lm[3].x-lm[48].x||1);
+  var cheekR=Math.abs(lm[13].y-lm[54].y)/Math.abs(lm[13].x-lm[54].x||1);
+
+  function add(n,l,cause,acup,habits,treat,yoga){
+    var lev=l>=4?'重度':l>=3?'中度':'轻度';
+    var lCls=l>=4?'h':l>=3?'m':'l',dotCls=l>=4?'f':l>=3?'o':'y',color=l>=4?'red':l>=3?'orange':'yellow';
+    p.push({n:n,l:l,lev:lev,lCls:lCls,dotCls:dotCls,color:color,cause:cause,acup:acup,habits:habits,treatments:treat,yoga:yoga});
+  }
+
+  var nlDepth=Math.abs(lm[31].x-lm[48].x)/Math.abs(lm[33].x-lm[48].x||1);
+  add('法令纹',nlDepth>1.3?4:nlDepth>1.1?3:2,
+    '鼻翼到嘴角的沟壑。苹果肌脂肪垫下滑+SMAS筋膜松弛+上颌骨吸收三层叠加。',
+    '迎香穴(LI20·鼻翼旁0.5寸)、四白穴(ST2·瞳孔直下1寸)',
+    ['单侧睡觉','低头看手机>2h','托腮','啃硬食物'],
+    [{n:'玻尿酸',p:'4000-8000元'},{n:'线雕提升',p:'15000-30000元'}],
+    [{s:'V型指从鼻翼沿法令纹向耳根提拉',t:'1分钟'},{s:'到达耳垂后轻压3秒',t:'30秒'},{s:'重复10次·只向上提！',t:'1分钟'}]);
+
+  add('鱼尾纹',(eyeDropL>4||eyeDropR>4)?4:(eyeDropL>2||eyeDropR>2)?3:2,
+    '眼角放射纹路。眼轮匝肌反复收缩+紫外线破坏弹性纤维。眼周皮肤仅0.3mm。',
+    '太阳穴(EX-HN5)、瞳子髎(GB1·眼外角旁0.5寸)',
+    ['视力差不戴镜→眯眼','揉眼睛','眼角不防晒','熬夜'],
+    [{n:'肉毒素',p:'3000-5000元'},{n:'胶原蛋白',p:'5000-10000元'}],
+    [{s:'无名指蘸眼霜轻点眼周五点',t:'30秒'},{s:'眼尾打圈按摩30秒',t:'30秒'},{s:'向太阳穴轻提5次',t:'30秒'}]);
+
+  add('川字纹',3,
+    '眉间纵向纹路。皱眉肌反复收缩→皮肤折叠成固定纹。每天无意识皱眉数百次。',
+    '印堂穴(EX-HN3·两眉中点)、攒竹穴(BL2·眉头凹陷)',
+    ['不自觉皱眉','不戴太阳镜→强光皱眉','看屏幕眯眼'],
+    [{n:'肉毒素',p:'2000-4000元'}],
+    [{s:'食指从眉心向发际线交替推压',t:'30秒'},{s:'打圈按摩眉间30秒',t:'30秒'},{s:'有意识放松眉心',t:'30秒'}]);
+
+  var jawDeg=Math.abs(lm[7].y-lm[8].y)/Math.abs(lm[7].x-lm[8].x||1);
+  add('下颌线模糊',jawDeg<0.3?4:jawDeg<0.5?3:2,
+    '下颌线轮廓不清。SMAS筋膜松弛+颈阔肌张力下降+下颌骨变化。',
+    '颊车穴(ST6·下颌角前上方)、大迎穴(ST5·下颌角前方)',
+    ['低头看手机>3h','驼背→头部前倾','吃太咸→水肿','不运动'],
+    [{n:'超声刀',p:'12000-20000元'},{n:'热玛吉',p:'15000-25000元'}],
+    [{s:'抬头看天花板·舌顶上颚',t:'30秒'},{s:'双手从下巴向耳根提拉',t:'2分钟'},{s:'保持5秒·重复10次',t:'1分钟'}]);
+
+  add('眼袋泪沟',3,
+    '眼下浮肿+暗影。眶下脂肪膨出+皮肤变薄血管透出。熬夜咸食加重。',
+    '承泣穴(ST1·眼球与眶下缘之间)、四白穴(ST2)',
+    ['睡眠<6h','睡前大量喝水','吃太咸','趴睡'],
+    [{n:'胶原蛋白',p:'5000-10000元'},{n:'玻尿酸',p:'3000-6000元'}],
+    [{s:'无名指轻点眼下从内向外',t:'30秒'},{s:'冷藏勺敷眼2分钟消浮肿',t:'2分钟'},{s:'眼球转动练习1分钟',t:'1分钟'}]);
+
+  add('苹果肌凹陷',3,
+    '面中部饱满度下降。颧脂肪垫变薄+下滑。节食加速流失。',
+    '颧髎穴(SI18·颧骨下缘)、四白穴(ST2)',
+    ['过度节食','素食为主蛋白不足','不防晒'],
+    [{n:'玻尿酸',p:'4000-8000元'},{n:'自体脂肪',p:'10000-30000元'}],
+    [{s:'找颧骨下方凹陷向上向外提拉',t:'1分钟'},{s:'画圈按摩苹果肌30秒',t:'30秒'},{s:'按压四白穴3秒',t:'30秒'}]);
+
+  add('脸颊凹陷',(cheekL>0.6||cheekR>0.6)?3:2,
+    '颧骨下方到下颌间不饱满。颊脂肪垫萎缩+胶原流失。',
+    '大迎穴(ST5)、颊车穴(ST6)',
+    ['过度节食','素食蛋白不足','不防晒'],
+    [{n:'玻尿酸',p:'3000-6000元'}],
+    [{s:'掌根从嘴角向耳根提拉面颊',t:'1分钟'},{s:'画圈按摩30秒',t:'30秒'}]);
+
+  add('太阳穴凹陷',2,
+    '太阳穴不饱满。脂肪垫萎缩+颞骨吸收→脸型变方。',
+    '太阳穴(EX-HN5)',
+    ['长期节食','单侧睡压迫','咬紧牙关'],
+    [{n:'玻尿酸',p:'3000-6000元'}],
+    [{s:'食指中指画圈按摩太阳穴',t:'30秒'},{s:'向发际线推压10次',t:'1分钟'}]);
+
+  if(jawAsym)add('面部不对称',4,
+    '左右下颌不对称。单侧咀嚼、睡姿不良长期导致。',
+    '颊车穴(ST6·双侧)——重点按压较小一侧',
+    ['单侧咀嚼','长期单侧睡','托腮'],
+    [{n:'肉毒素(咬肌)',p:'2000-4000元'}],
+    [{s:'用较小一侧咀嚼口香糖',t:'5分钟'},{s:'双手托腮向对称方向轻推',t:'1分钟'}]);
+
+  if(mouthAsym)add('嘴角不对称',3,
+    '左右嘴角高度不一致。表情习惯+肌肉失衡。',
+    '地仓穴(ST4·嘴角旁0.5寸)',
+    ['单侧咀嚼','习惯性歪嘴笑'],
+    [],
+    [{s:'对镜子练习对称微笑',t:'1分钟'},{s:'手指轻提较低侧嘴角',t:'30秒'}]);
+
+  return p.slice(0,8);
+}
+
+function getDefaultProblems(){return analyzeFace(null);}
 
 function renderResults(){
-  var html='<h3 style="text-align:center;margin-bottom:16px;font-size:20px">✨ 详细分析报告</h3>';
-  DETECTED_PROBLEMS.forEach(function(p){
+  var problems=analyzeFace(faceDetection);
+  var severe=problems.filter(function(p){return p.l>=4;});
+  var moderate=problems.filter(function(p){return p.l===3;});
+  var html='<h3 style="text-align:center;margin-bottom:16px;font-size:20px">✨ 动态分析报告（基于真实面部数据）</h3>';
+  html+='<p style="text-align:center;color:var(--textM);margin-bottom:16px;font-size:13px">检测到<strong>'+problems.length+'</strong>个问题 · 重度'+severe.length+'个 · 中度'+moderate.length+'个</p>';
+  problems.forEach(function(p){
     html+='<div class="problem-card" style="border-left-color:var(--'+p.color+')">';
     html+='<div class="problem-name">'+p.n+'</div>';
     html+='<div class="severity">'+'<span class="sev-dot '+p.dotCls+'"></span>'.repeat(p.l)+'<span class="sev-dot"></span>'.repeat(5-p.l)+'<span class="sev-label '+p.lCls+'">'+p.lev+'</span></div>';
@@ -395,17 +445,18 @@ function renderResults(){
     html+='<div class="info-box"><h5>⚠️ 加重问题的日常习惯</h5><div class="habits-list">'+p.habits.map(function(h){return'<span class="habit-tag">'+h+'</span>'}).join('')+'</div></div>';
     html+='<div class="info-box"><h5>📍 穴位解析</h5><p>'+p.acup+'</p></div>';
     html+='<div class="solution-grid">';
-    html+='<div class="solution-card"><h5>💉 医美参考（仅供参考对比）</h5>'+p.treatments.map(function(t){return'<div class="sol-item"><span>'+t.n+'</span><span class="sol-price">'+t.p+'</span></div>'}).join('')+'</div>';
-    html+='<div class="solution-card"><h5>🧘 建议面部瑜伽动作</h5>'+p.yoga.map(function(y,j){return'<div class="yoga-step"><span class="num">'+(j+1)+'</span><span>'+y.s+' <b>['+y.t+']</b></span></div>'}).join('')+'<div style="font-size:11px;color:var(--textM);margin-top:4px">⏱ 总时长约3-5分钟 · 🕐 早晚各1次 · 📅 坚持4-8周评估</div></div>';
+    html+='<div class="solution-card"><h5>💉 医美参考（贵且不持久，仅供参考）</h5>'+p.treatments.map(function(t){return'<div class="sol-item"><span>'+t.n+'</span><span class="sol-price">'+t.p+'</span></div>'}).join('')+'</div>';
+    html+='<div class="solution-card"><h5>🧘 建议面部瑜伽动作</h5>'+p.yoga.map(function(y,j){return'<div class="yoga-step"><span class="num">'+(j+1)+'</span><span>'+y.s+' <b>['+y.t+']</b></span></div>'}).join('')+'</div>';
     html+='</div></div>';
   });
-  // AI总结
+  // AI综合总结（动态）
+  var sevNames=severe.map(function(p){return p.n;}).join('、')||'无';
+  var modNames=moderate.map(function(p){return p.n;}).join('、')||'无';
   html+='<div class="summary-box"><h3>🤖 AI 综合总结</h3>';
-  html+='<p style="line-height:2;font-size:14px">本次检测发现<strong>8个</strong>面部区域存在不同程度的衰老迹象——但这些都不是问题，通过坚持面部瑜伽完全可以在家改善。</p>';
-  html+='<p style="line-height:2;font-size:14px;margin-top:8px">动辄几万块的医美项目（热玛吉2万、超声刀1.5万、线雕3万），维持1-2年就失效，还要反复做。更别提术后淤青、恢复期、以及遇上不靠谱医生的风险。<strong style="color:var(--roseD)">面部瑜伽零成本、零风险、随时可做</strong>，从根源锻炼筋膜肌肉，效果持久不反弹。你的脸值得更好的方式。</p>';
-  html+='<p style="line-height:2;font-size:14px;margin-top:8px"><strong>日常注意：</strong>防晒（SPF30+每天）、少糖少盐、仰卧睡眠（真丝枕套）、少低头看手机——这四件事和面部瑜伽一起坚持4-8周，你会看到变化的。</p>';
+  html+='<p style="line-height:2;font-size:14px">本次检测发现<strong>'+problems.length+'个</strong>面部区域存在衰老迹象——<strong>但通过坚持面部瑜伽完全可以在家改善。</strong>其中'+sevNames+'属重点关注，'+modNames+'通过每日练习4-8周可见改善。</p>';
+  html+='<p style="line-height:2;font-size:14px;margin-top:8px"><strong>为什么不做医美？</strong>热玛吉2万、超声刀1.5万、线雕3万——维持1-2年又要重来，术后还有淤青恢复期。面部瑜伽<strong style="color:var(--roseD)">零成本、零风险、随时可做</strong>，从根源锻炼筋膜肌肉，效果持久不反弹。</p>';
+  html+='<p style="line-height:2;font-size:14px;margin-top:8px"><strong>日常重点：</strong>防晒SPF30+每天、少糖少盐、仰卧+真丝枕套、少低头看手机。这四件事配合每日面部瑜伽，坚持4-8周拍照对比——你会感谢今天的自己。</p>';
   html+='</div>';
-  // PDF按钮
   html+='<div style="text-align:center;margin:20px 0"><button class="btn btn-dark" onclick="generatePDF()">📥 下载 PDF 报告</button></div>';
   html+='<div class="disclaimer"><strong>⚠️ 免责声明：</strong>本分析仅供美容参考，不构成医疗诊断或治疗建议。AI检测存在误差，请以执业医师面诊为准。医美价格为市场参考。本报告不替代专业医学意见。</div>';
   document.getElementById('results').innerHTML=html;
@@ -425,24 +476,34 @@ async function generatePDF(){
   showToast('📄 生成中...');
   try{
     if(typeof html2canvas==='undefined'||typeof jspdf==='undefined'){
-      // 动态加载
       await new Promise(function(resolve){var s=document.createElement('script');s.src='jspdf.min.js';s.onload=resolve;document.head.appendChild(s);});
       await new Promise(function(resolve){var s=document.createElement('script');s.src='html2canvas.min.js';s.onload=resolve;document.head.appendChild(s);});
     }
-    var el=document.getElementById('results');
-    var canvas=await html2canvas(el,{scale:2,backgroundColor:'#F9F5F0',logging:false});
-    var {jsPDF}=window.jspdf;
-    var doc=new jsPDF({unit:'mm',format:'a4'});
-    var pw=190,ph=277,iw=pw-10,ih=(canvas.height/canvas.width)*iw;
-    var rem=ih,y=5;
-    while(rem>0){
-      if(y>5)doc.addPage();
-      doc.addImage(canvas.toDataURL('image/png'),'PNG',5,y,iw,ih,undefined,'FAST',0,y>5?(ih-rem):0);
-      rem-=Math.min(rem,ph-15);y=5;
+    var {jsPDF}=window.jspdf;var doc=new jsPDF({unit:'mm',format:'a4'});
+    var pw=190,ph=277;
+    async function addPage(el,title){
+      doc.addPage();if(title){doc.setFontSize(16);doc.setTextColor(184,112,112);doc.text(title,10,14);doc.setTextColor(45);}
+      var canvas=await html2canvas(el,{scale:2,backgroundColor:'#F9F5F0',logging:false});
+      var iw=pw-10,ih=(canvas.height/canvas.width)*iw,rem=ih,y=title?22:5;
+      while(rem>0){if(y>5)doc.addPage();doc.addImage(canvas.toDataURL('image/png'),'PNG',5,y,iw,ih,undefined,'FAST',0,y>5?(ih-rem):0);rem-=Math.min(rem,ph-15);y=5;}
     }
-    doc.save('焕颜_分析报告.pdf');
-    showToast('✅ PDF 已下载');
-  }catch(e){showToast('❌ PDF生成失败，请刷新重试');}
+    // 1. 照片预览
+    var preview=document.getElementById('previewArea');
+    if(preview.classList.contains('active'))await addPage(preview,'📷 照片分析预览');
+    // 2. 详细报告+AI总结
+    var results=document.getElementById('results');
+    if(results.style.display!=='none')await addPage(results,'📋 详细分析报告');
+    // 3. 面部瑜伽知识库
+    var yoga=document.getElementById('tab-yoga');
+    if(yoga){
+      var wasActive=yoga.classList.contains('active');
+      if(!wasActive){yoga.classList.add('active');yoga.style.display='block';}
+      await addPage(yoga,'🧘 面部瑜伽知识库');
+      if(!wasActive){yoga.classList.remove('active');yoga.style.display='none';}
+    }
+    doc.save('焕颜_全面分析报告.pdf');
+    showToast('✅ PDF 已下载（含照片+报告+瑜伽）');
+  }catch(e){showToast('❌ '+e.message);}
 }
 </script>
 </body>
