@@ -308,11 +308,22 @@ function drawAnnotated(d){
 
 function drawImproved(d){
   var c=document.getElementById('c3');var s=Math.min((c.parentElement.clientWidth-4)/uploadedImage.width,1);c.width=uploadedImage.width*s;c.height=uploadedImage.height*s;var ctx=c.getContext('2d');
-  // 两层渲染：底层提亮去纹，上层原图叠回保留五官
-  ctx.filter='brightness(1.15) contrast(0.92) saturate(1.06)';
+  // 去饱和显示原图
+  ctx.filter='saturate(0.35) brightness(1.05)';
   ctx.drawImage(uploadedImage,0,0,c.width,c.height);ctx.filter='none';
-  // 叠回原图40%保留细节
-  ctx.globalAlpha=0.40;ctx.drawImage(uploadedImage,0,0,c.width,c.height);ctx.globalAlpha=1;
+  // 柔光渐变覆盖
+  var grd=ctx.createRadialGradient(c.width/2,c.height/2,c.width*0.05,c.width/2,c.height/2,c.width*0.7);
+  grd.addColorStop(0,'rgba(255,240,230,0.25)');grd.addColorStop(0.6,'rgba(255,240,230,0.06)');grd.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=grd;ctx.fillRect(0,0,c.width,c.height);
+  // 文字注释
+  var fs=Math.max(11,c.width*0.035);ctx.font=fs+'px -apple-system,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  var tx='改善效果：面部瑜伽 4-8 周后可逐渐显现';
+  var tw=ctx.measureText(tx).width,th=fs*2.2;
+  var bx=c.width/2-tw/2-14,by=c.height/2-th/2-4;
+  ctx.fillStyle='rgba(0,0,0,0.45)';ctx.beginPath();ctx.roundRect(bx,by,tw+28,th+8,10);ctx.fill();
+  ctx.fillStyle='#fff';ctx.fillText(tx,c.width/2,c.height/2);
+  ctx.textAlign='start';ctx.textBaseline='alphabetic';
 }
 
 async function handleFile(e){
@@ -328,6 +339,7 @@ async function handleFile(e){
       drawCanvas('c1',uploadedImage);
       var d=await faceapi.detectSingleFace(uploadedImage,new faceapi.SsdMobilenetv1Options({minConfidence:0.35})).withFaceLandmarks();
       faceDetection=d;
+      window.faceDetection=d;
       if(d){drawAnnotated(d);drawImproved(d);}
       else{drawCanvas('c2',uploadedImage);drawCanvas('c3',uploadedImage);showToast('未检测到人脸，请上传正面照');}
     };
@@ -429,10 +441,44 @@ function analyzeFace(d){
   return p.slice(0,8);
 }
 
-function getDefaultProblems(){return analyzeFace(null);}
+function getDefaultProblems(){
+  // 返回一组静态默认问题（无面部分析数据时使用）
+  return [
+    {n:'法令纹',l:3,lev:'中度',lCls:'m',dotCls:'o',color:'orange',
+     cause:'鼻翼到嘴角的沟壑。苹果肌脂肪垫下滑+SMAS筋膜松弛+上颌骨吸收三层叠加。',
+     acup:'迎香穴(LI20·鼻翼旁0.5寸)、四白穴(ST2·瞳孔直下1寸)',
+     habits:['单侧睡觉','低头看手机>2h','托腮','啃硬食物'],
+     treatments:[{n:'玻尿酸',p:'4000-8000元'},{n:'线雕提升',p:'15000-30000元'}],
+     yoga:[{s:'V型指从鼻翼沿法令纹向耳根提拉',t:'1分钟'},{s:'到达耳垂后轻压3秒',t:'30秒'},{s:'重复10次·只向上提！',t:'1分钟'}]},
+    {n:'鱼尾纹',l:2,lev:'轻度',lCls:'l',dotCls:'y',color:'yellow',
+     cause:'眼角放射纹路。眼轮匝肌反复收缩+紫外线破坏弹性纤维。眼周皮肤仅0.3mm。',
+     acup:'太阳穴(EX-HN5)、瞳子髎(GB1·眼外角旁0.5寸)',
+     habits:['视力差不戴镜→眯眼','揉眼睛','眼角不防晒','熬夜'],
+     treatments:[{n:'肉毒素',p:'3000-5000元'}],
+     yoga:[{s:'无名指蘸眼霜轻点眼周五点',t:'30秒'},{s:'眼尾打圈按摩30秒',t:'30秒'},{s:'向太阳穴轻提5次',t:'30秒'}]},
+    {n:'川字纹',l:3,lev:'中度',lCls:'m',dotCls:'o',color:'orange',
+     cause:'眉间纵向纹路。皱眉肌反复收缩→皮肤折叠成固定纹。',
+     acup:'印堂穴(EX-HN3·两眉中点)、攒竹穴(BL2·眉头凹陷)',
+     habits:['不自觉皱眉','不戴太阳镜→强光皱眉','看屏幕眯眼'],
+     treatments:[{n:'肉毒素',p:'2000-4000元'}],
+     yoga:[{s:'食指从眉心向发际线交替推压',t:'30秒'},{s:'打圈按摩眉间30秒',t:'30秒'},{s:'有意识放松眉心',t:'30秒'}]},
+    {n:'下颌线模糊',l:3,lev:'中度',lCls:'m',dotCls:'o',color:'orange',
+     cause:'下颌线轮廓不清。SMAS筋膜松弛+颈阔肌张力下降+下颌骨变化。',
+     acup:'颊车穴(ST6·下颌角前上方)、大迎穴(ST5·下颌角前方)',
+     habits:['低头看手机>3h','驼背→头部前倾','吃太咸→水肿'],
+     treatments:[{n:'超声刀',p:'12000-20000元'}],
+     yoga:[{s:'抬头看天花板·舌顶上颚',t:'30秒'},{s:'双手从下巴向耳根提拉',t:'2分钟'},{s:'保持5秒·重复10次',t:'1分钟'}]},
+    {n:'眼袋泪沟',l:2,lev:'轻度',lCls:'l',dotCls:'y',color:'yellow',
+     cause:'眼下浮肿+暗影。眶下脂肪膨出+皮肤变薄血管透出。',
+     acup:'承泣穴(ST1·眼球与眶下缘之间)、四白穴(ST2)',
+     habits:['睡眠<6h','睡前大量喝水','吃太咸'],
+     treatments:[{n:'胶原蛋白',p:'5000-10000元'}],
+     yoga:[{s:'无名指轻点眼下从内向外',t:'30秒'},{s:'冷藏勺敷眼2分钟消浮肿',t:'2分钟'}]}
+  ];
+}
 
 function renderResults(){
-  var problems=analyzeFace(faceDetection);
+  var problems=analyzeFace(window.faceDetection);
   var severe=problems.filter(function(p){return p.l>=4;});
   var moderate=problems.filter(function(p){return p.l===3;});
   var html='<h3 style="text-align:center;margin-bottom:16px;font-size:20px">✨ 动态分析报告（基于真实面部数据）</h3>';
@@ -481,28 +527,47 @@ async function generatePDF(){
     }
     var {jsPDF}=window.jspdf;var doc=new jsPDF({unit:'mm',format:'a4'});
     var pw=190,ph=277;
-    async function addPage(el,title){
-      doc.addPage();if(title){doc.setFontSize(16);doc.setTextColor(184,112,112);doc.text(title,10,14);doc.setTextColor(45);}
-      var canvas=await html2canvas(el,{scale:2,backgroundColor:'#F9F5F0',logging:false});
-      var iw=pw-10,ih=(canvas.height/canvas.width)*iw,rem=ih,y=title?22:5;
-      while(rem>0){if(y>5)doc.addPage();doc.addImage(canvas.toDataURL('image/png'),'PNG',5,y,iw,ih,undefined,'FAST',0,y>5?(ih-rem):0);rem-=Math.min(rem,ph-15);y=5;}
-    }
-    // 1. 照片预览
-    var preview=document.getElementById('previewArea');
-    if(preview.classList.contains('active'))await addPage(preview,'📷 照片分析预览');
-    // 2. 详细报告+AI总结
     var results=document.getElementById('results');
-    if(results.style.display!=='none')await addPage(results,'📋 详细分析报告');
-    // 3. 面部瑜伽知识库
-    var yoga=document.getElementById('tab-yoga');
-    if(yoga){
-      var wasActive=yoga.classList.contains('active');
-      if(!wasActive){yoga.classList.add('active');yoga.style.display='block';}
-      await addPage(yoga,'🧘 面部瑜伽知识库');
-      if(!wasActive){yoga.classList.remove('active');yoga.style.display='none';}
+    if(results.style.display==='none'){showToast('⚠️ 请先完成分析');return;}
+    // 在 results 顶部插入照片缩略图（临时）
+    var thumbHTML='';
+    if(uploadedImage){
+      var thumbW=160,thumbH=Math.round(thumbW*uploadedImage.height/uploadedImage.width);
+      var oc=document.createElement('canvas');oc.width=thumbW;oc.height=thumbH;
+      oc.getContext('2d').drawImage(uploadedImage,0,0,thumbW,thumbH);
+      var origSrc=oc.toDataURL('image/jpeg',0.85);
+      var ac=document.createElement('canvas');ac.width=thumbW;ac.height=thumbH;
+      var actx=ac.getContext('2d');actx.drawImage(uploadedImage,0,0,thumbW,thumbH);
+      if(window.faceDetection){
+        var lm=window.faceDetection.landmarks.positions;
+        var scX=thumbW/uploadedImage.width,scY=thumbH/uploadedImage.height;
+        lm.forEach(function(p){actx.fillStyle='#E05555';actx.beginPath();actx.arc(p.x*scX,p.y*scY,3,0,Math.PI*2);actx.fill();actx.strokeStyle='#fff';actx.lineWidth=1;actx.stroke();});
+      }
+      var annoSrc=ac.toDataURL('image/jpeg',0.85);
+      thumbHTML='<div style="display:flex;gap:12px;justify-content:center;margin-bottom:16px;flex-wrap:wrap">'+
+        '<div style="text-align:center"><img src="'+origSrc+'" style="max-width:150px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1)"><div style="font-size:11px;color:#6B5E5E;margin-top:4px">📷 原图</div></div>'+
+        '<div style="text-align:center"><img src="'+annoSrc+'" style="max-width:150px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1)"><div style="font-size:11px;color:#6B5E5E;margin-top:4px">🔍 问题标注</div></div>'+
+        '</div>';
+    }
+    var origHTML=results.innerHTML;
+    results.innerHTML=thumbHTML+origHTML;
+    // 截图 results
+    var canvas=await html2canvas(results,{scale:2,backgroundColor:'#F9F5F0',logging:false});
+    results.innerHTML=origHTML;
+    // 计算分页
+    var iw=pw-10,ih=(canvas.height/canvas.width)*iw;
+    var y=5;
+    doc.setFontSize(16);doc.setTextColor(184,112,112);doc.text('✨ 焕颜 AI 面部分析报告',10,12);doc.setTextColor(45);
+    y=18;
+    var rem=ih;
+    while(rem>0){
+      var sliceH=Math.min(rem,ph-20);
+      if(y>18)doc.addPage();
+      doc.addImage(canvas.toDataURL('image/png'),'PNG',5,y,iw,ih,undefined,'FAST',0,y>18?(ih-rem):0);
+      rem-=sliceH;y=5;
     }
     doc.save('焕颜_全面分析报告.pdf');
-    showToast('✅ PDF 已下载（含照片+报告+瑜伽）');
+    showToast('✅ PDF 已下载（含照片缩略图+完整报告）');
   }catch(e){showToast('❌ '+e.message);}
 }
 </script>
