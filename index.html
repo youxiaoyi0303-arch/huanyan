@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>焕颜 — 您的私人面部衰老分析专家</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="face-api.min.js"></script>
+<script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 :root{
   --cream:#F9F5F0;--warm:#FFFBF6;--rose:#D4A0A0;--roseD:#B87070;--roseL:#F2E2E2;
@@ -275,7 +275,7 @@ footer{text-align:center;padding:56px 48px;color:var(--textM);font-size:13px;bor
 
 <script>
 // ===== Face-API 模型加载 =====
-const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+const MODEL_URL = './models/';
 let modelsLoaded = false;
 let uploadedImage = null;
 let faceDetection = null;
