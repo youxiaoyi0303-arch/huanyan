@@ -327,7 +327,7 @@ async function handleFile(e){
       document.getElementById('previewArea').classList.add('active');
       drawCanvas('c1',uploadedImage);
       // 提高检测精度 minConfidence: 0.5，减少误检
-      var d=await faceapi.detectSingleFace(uploadedImage,new faceapi.SsdMobilenetv1Options({minConfidence:0.5})).withFaceLandmarks();
+      var d=await faceapi.detectSingleFace(uploadedImage,new faceapi.SsdMobilenetv1Options({minConfidence:0.4})).withFaceLandmarks();
       faceDetection=d;window.faceDetection=d;
       var btn=document.querySelector('#analyze button');
       if(d){
@@ -350,6 +350,7 @@ async function handleFile(e){
 // 这些比例天然不同 → 分析结果必然不同
 function analyzeFace(d){
   if(!d)return getDefaultProblems();
+  try{
   var lm=d.landmarks.positions,p=[];
 
   // 计算 15+ 个比例指标（每张脸的"指纹"）
@@ -483,6 +484,7 @@ function analyzeFace(d){
   // 按严重度排序，取前8
   p.sort(function(a,b){return b.l-a.l});
   return p.slice(0,8);
+  }catch(e){console.error('analyzeFace error:',e);return getDefaultProblems();}
 }
 
 function getDefaultProblems(){
