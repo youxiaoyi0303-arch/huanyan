@@ -95,7 +95,7 @@ footer{text-align:center;padding:30px;color:var(--textM);font-size:11px;border-t
       <div class="preview-card"><h3>🔍 问题标注</h3><div class="canvas-wrap"><canvas id="c2"></canvas></div><div class="annotation-legend"><span class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>重度</span><span class="legend-item"><span class="legend-dot" style="background:var(--orange)"></span>中度</span><span class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span>轻度</span></div></div>
       <div class="preview-card"><h3>✨ 改善效果</h3><div class="canvas-wrap"><canvas id="c3"></canvas></div></div>
     </div>
-    <div style="text-align:center;margin-top:14px"><button class="btn btn-primary" onclick="startAnalysis()">🔬 开始详细分析</button></div>
+    <div style="text-align:center;margin-top:14px"><button class="btn btn-primary" id="analyzeBtn" onclick="startAnalysis()">🔬 开始详细分析</button></div>
     <div id="prog" style="display:none;text-align:center;margin-top:14px"><div class="spinner"></div><p id="progText" style="color:var(--textM);font-size:13px">分析中...</p><div class="progress-bar"><div class="progress-fill" id="progFill"></div></div></div>
   </div>
   <div id="results" style="display:none;margin-top:20px"></div>
@@ -329,7 +329,7 @@ async function handleFile(e){
       // 提高检测精度 minConfidence: 0.5，减少误检
       var d=await faceapi.detectSingleFace(uploadedImage,new faceapi.SsdMobilenetv1Options({minConfidence:0.4})).withFaceLandmarks();
       faceDetection=d;window.faceDetection=d;
-      var btn=document.querySelector('#analyze button');
+      var btn=document.getElementById('analyzeBtn');
       if(d){
         drawAnnotated(d);drawImproved(d);
         btn.disabled=false;btn.textContent='🔬 开始详细分析';btn.style.opacity='1';
