@@ -482,7 +482,7 @@ function drawImproved(detection){
   const scale = Math.min(maxW/uploadedImage.width, 1);
   c.width = uploadedImage.width*scale; c.height = uploadedImage.height*scale;
   const ctx = c.getContext('2d');
-  ctx.filter = 'brightness(1.18) contrast(0.88) saturate(1.12) blur(1.5px)';
+  ctx.filter = 'brightness(1.12) contrast(0.92) saturate(1.10)';
   ctx.drawImage(uploadedImage, 0, 0, c.width, c.height);
   ctx.filter = 'none';
 }
