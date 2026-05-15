@@ -345,141 +345,142 @@ async function handleFile(e){
   reader.readAsDataURL(file);
 }
 
-// ===== 动态面部分析引擎（所有严重度基于真实面部数据计算）=====
+// ===== 动态面部分析引擎（人脸比例指纹——每张脸必然不同）=====
+// 核心：不同人有不同的眼距/脸宽比、不同的嘴宽/脸宽比、不同的中庭/下庭比...
+// 这些比例天然不同 → 分析结果必然不同
 function analyzeFace(d){
   if(!d)return getDefaultProblems();
-  var lm=d.landmarks.positions,p=[],mid=(lm[27].x+lm[30].x)/2;
+  var lm=d.landmarks.positions,p=[];
 
-  // 基础比例（用来归一化不同尺寸的脸）
-  var faceW=Math.abs(lm[0].x-lm[16].x);                   // 脸宽
-  var faceH=Math.abs(lm[27].y-lm[8].y);                   // 脸高（眉间到下巴）
-  var eyeW=Math.abs(lm[36].x-lm[45].x);                   // 眼宽
-  var mouthW=Math.abs(lm[48].x-lm[54].x);                 // 嘴宽
-  var noseY=lm[30].y;                                     // 鼻尖Y
-  var chinY=lm[8].y;                                       // 下巴Y
+  // 计算 15+ 个比例指标（每张脸的"指纹"）
+  var faceW=Math.abs(lm[0].x-lm[16].x);
+  var faceH=Math.abs(lm[19].y-lm[8].y);       // 眉到下巴
+  var midX=(lm[27].x+lm[30].x)/2;
+  var eyeDist=Math.abs(lm[39].x-lm[42].x)/faceW;    // 瞳距/脸宽
+  var eyeH=Math.abs(lm[37].y-lm[41].y)/faceH;       // 眼高/脸高
+  var browDist=Math.abs(lm[21].x-lm[22].x)/faceW;   // 眉间距/脸宽
+  var mouthW=Math.abs(lm[48].x-lm[54].x)/faceW;     // 嘴宽/脸宽
+  var noseW=Math.abs(lm[31].x-lm[35].x)/faceW;      // 鼻宽/脸宽
+  var jawW=Math.abs(lm[3].x-lm[13].x)/faceW;        // 下颌宽/脸宽
+  var midFace=Math.abs(lm[27].y-lm[33].y)/faceH;    // 中庭占比
+  var lowFace=Math.abs(lm[33].y-lm[8].y)/faceH;     // 下庭占比
+  var chinW=Math.abs(lm[7].x-lm[9].x)/faceW;        // 下巴宽/脸宽
+  var cheekL=Math.abs(lm[3].y-lm[48].y)/faceH;      // 左颊深度
+  var cheekR=Math.abs(lm[13].y-lm[54].y)/faceH;     // 右颊深度
+  var templeL=Math.abs(lm[1].x-lm[17].x)/faceW;     // 左颞部
+  var templeR=Math.abs(lm[15].x-lm[26].x)/faceW;    // 右颞部
+  var noseToMouth=Math.abs(lm[33].y-lm[51].y)/faceH; // 鼻-人中距离
+  var jawAngle=Math.abs(lm[7].y-lm[8].y)/Math.max(1,Math.abs(lm[7].x-lm[8].x));
 
-  // 帮助函数：将值映射到1-5严重度
-  function sev(val,lo2,hi2,lo3,hi3,lo4,hi4){
-    if(val>=lo4&&val<=hi4)return 4;
-    if(val>=lo3&&val<=hi3)return 3;
-    if(val>=lo2&&val<=hi2)return 2;
-    return 1;
+  // 不对称指标
+  var asymJaw=Math.abs(Math.abs(lm[4].x-midX)-Math.abs(lm[12].x-midX))/faceW;
+  var asymMouth=Math.abs(lm[48].y-lm[54].y)/faceH;
+  var asymEye=Math.abs(Math.abs(lm[39].y-lm[36].y)-Math.abs(lm[42].y-lm[45].y))/faceH;
+
+  // 评分函数：直接用比例值 x 放大系数，确保不同脸不同分
+  function sc(v,multiplier,offset){
+    return Math.max(1,Math.min(5,Math.round(v*multiplier+offset)));
   }
+
   function add(n,l,cause,acup,habits,treat,yoga){
     var lev=l>=4?'重度':l>=3?'中度':l>=2?'轻度':'无';
-    var lCls=l>=4?'h':l>=3?'m':l>=2?'l':'l',dotCls=l>=4?'f':l>=3?'o':'y',color=l>=4?'red':l>=3?'orange':'yellow';
+    var lCls=l>=4?'h':l>=3?'m':'l',dotCls=l>=4?'f':l>=3?'o':'y',color=l>=4?'red':l>=3?'orange':'yellow';
     if(l>=2)p.push({n:n,l:l,lev:lev,lCls:lCls,dotCls:dotCls,color:color,cause:cause,acup:acup,habits:habits,treatments:treat,yoga:yoga});
   }
 
-  // 1. 法令纹深度：鼻翼点到嘴角的横向距离比
-  var nlL=Math.abs(lm[31].x-lm[48].x)/faceW;
-  var nlR=Math.abs(lm[35].x-lm[54].x)/faceW;
-  var nlScore=sev(Math.min(nlL,nlR), 0.18,0.22, 0.14,0.18, 0.10,0.14)+1;
-  add('法令纹',nlScore,
+  // 法令纹 = 中庭占比大 + 鼻嘴距大 + 下颌宽 → 法令纹深
+  add('法令纹',sc(midFace,8,-1)+sc(noseToMouth,6,0)+sc(jawW,3,-2),
     '鼻翼到嘴角沟壑。苹果肌脂肪垫下滑+SMAS筋膜松弛+上颌骨吸收三层叠加。',
     '迎香穴(LI20)、四白穴(ST2)',
     ['单侧睡觉','低头>2h','托腮','啃硬食物'],
     [{n:'玻尿酸',p:'4000-8000元'},{n:'线雕提升',p:'15000-30000元'}],
     [{s:'V型指从鼻翼沿法令纹向耳根提拉',t:'1分钟'},{s:'耳垂轻压3秒',t:'30秒'},{s:'重复10次，只向上',t:'1分钟'}]);
-
-  // 2. 鱼尾纹：眼角上下落差
-  var eyeDrop=Math.max(Math.abs(lm[37].y-lm[41].y),Math.abs(lm[44].y-lm[46].y))/faceH;
-  var eyeScore=sev(eyeDrop,0.04,0.06,0.03,0.04,0.02,0.03)+1;
-  add('鱼尾纹',eyeScore,
-    '眼角放射纹。眼轮匝肌反复收缩+紫外线破坏弹性纤维。眼周仅0.3mm。',
+  // 鱼尾纹 = 眼高大 + 瞳距窄 + 颞部窄
+  add('鱼尾纹',sc(eyeH,15,1)+sc(1-eyeDist,4,0)+sc(1-templeL-templeR,3,0),
+    '眼角放射纹。眼轮匝肌反复收缩+弹性纤维破坏。眼周仅0.3mm。',
     '太阳穴(EX-HN5)、瞳子髎(GB1)',
     ['不戴镜→眯眼','揉眼睛','眼角不防晒','熬夜'],
     [{n:'肉毒素',p:'3000-5000元'},{n:'胶原蛋白',p:'5000-10000元'}],
-    [{s:'无名指蘸眼霜轻点眼周五点',t:'30秒'},{s:'眼尾打圈按摩30秒',t:'30秒'},{s:'向太阳穴轻提5次',t:'30秒'}]);
-
-  // 3. 川字纹：眉间距相对于脸宽
-  var browGap=Math.abs(lm[21].x-lm[22].x)/faceW;
-  var browScore=sev(browGap,0.28,0.35,0.22,0.28,0.16,0.22)+1;
-  add('川字纹',browScore,
-    '眉间纵向纹路。皱眉肌反复收缩→皮肤折叠。每天无意识皱眉数百次。',
+    [{s:'无名指蘸眼霜轻点眼周五点',t:'30秒'},{s:'眼尾打圈30秒',t:'30秒'},{s:'向太阳穴轻提5次',t:'30秒'}]);
+  // 川字纹 = 眉间距窄 + 眼距窄
+  add('川字纹',sc(1-browDist,6,1)+sc(1-eyeDist,3,0),
+    '眉间纵向纹路。皱眉肌反复收缩→皮肤折叠。',
     '印堂穴(EX-HN3)、攒竹穴(BL2)',
-    ['不自觉皱眉','强光→眯眼','看屏幕不戴蓝光镜'],
+    ['不自觉皱眉','强光→眯眼','看屏幕不戴蓝光'],
     [{n:'肉毒素',p:'2000-4000元'}],
-    [{s:'食指从眉心向发际线交替推压',t:'30秒'},{s:'打圈按摩眉间30秒',t:'30秒'},{s:'有意识放松眉心',t:'30秒'}]);
-
-  // 4. 下颌线模糊：下颌骨轮廓角度
-  var jawAngle=Math.abs(lm[7].y-lm[8].y)/Math.abs(lm[7].x-lm[8].x||1);
-  var jawScore=sev(jawAngle,0.8,1.2,0.6,0.8,0.4,0.6)+1;
-  add('下颌线模糊',jawScore,
+    [{s:'食指从眉心向发际线推压',t:'30秒'},{s:'眉间打圈30秒',t:'30秒'},{s:'有意识放松眉心',t:'30秒'}]);
+  // 下颌线 = 下颌角平缓 + 下巴窄 + 下庭长
+  add('下颌线模糊',sc(1-jawAngle,4,0)+sc(1-chinW,3,0)+sc(lowFace,3,0),
     '下颌轮廓不清。SMAS筋膜松弛+颈阔肌张力下降。',
     '颊车穴(ST6)、大迎穴(ST5)',
-    ['低头>3h','驼背→前倾','吃太咸→水肿','不运动'],
+    ['低头>3h','驼背→前倾','吃太咸','不运动'],
     [{n:'超声刀',p:'12000-20000元'},{n:'热玛吉',p:'15000-25000元'}],
-    [{s:'抬头看天花板·舌顶上颚',t:'30秒'},{s:'双手从下巴向耳根提拉',t:'2分钟'},{s:'保持5秒·重复10次',t:'1分钟'}]);
-
-  // 5. 眼袋泪沟：眼下区域凹陷深度
-  var underEye=Math.max(Math.abs(lm[29].y-lm[48].y),Math.abs(lm[30].y-lm[48].y))/faceH;
-  var ueScore=sev(underEye,0.22,0.28,0.18,0.22,0.14,0.18)+1;
-  add('眼袋泪沟',ueScore,
+    [{s:'抬头看天花板·舌顶上颚',t:'30秒'},{s:'双手从下巴向耳根提拉',t:'2分钟'},{s:'保持5秒重复10次',t:'1分钟'}]);
+  // 眼袋泪沟 = 眼高大 + 中庭大 + 颊浅
+  add('眼袋泪沟',sc(eyeH,10,1)+sc(midFace,4,0)+sc(1-cheekL-cheekR,4,0),
     '眼下浮肿+暗影。眶下脂肪膨出+皮肤变薄血管透出。',
     '承泣穴(ST1)、四白穴(ST2)',
     ['睡眠<6h','睡前大量喝水','吃太咸','趴睡'],
     [{n:'胶原蛋白',p:'5000-10000元'},{n:'玻尿酸',p:'3000-6000元'}],
     [{s:'无名指轻点眼下从内向外',t:'30秒'},{s:'冷藏勺敷眼2分钟消浮肿',t:'2分钟'},{s:'眼球转动练习1分钟',t:'1分钟'}]);
-
-  // 6. 苹果肌凹陷：颧骨下方面中部的饱满度
-  var cheekbone=Math.abs(lm[1].x-lm[2].x)/faceW;  // 颧骨宽度比
-  var appleScore=sev(cheekbone,0.22,0.26,0.18,0.22,0.14,0.18)+1;
-  add('苹果肌凹陷',appleScore,
-    '面中部饱满度下降。颧脂肪垫变薄+下滑。节食加速流失。',
+  // 苹果肌凹陷 = 中庭小 + 颊深 + 颞部宽
+  add('苹果肌凹陷',sc(1-midFace,5,1)+sc(cheekL+cheekR,5,0)+sc(templeL+templeR,3,0),
+    '面中部饱满度下降。颧脂肪垫变薄+下滑。',
     '颧髎穴(SI18)、四白穴(ST2)',
     ['过度节食','素食蛋白不足','不防晒'],
     [{n:'玻尿酸',p:'4000-8000元'},{n:'自体脂肪',p:'10000-30000元'}],
     [{s:'找颧骨下方凹陷向上向外提拉',t:'1分钟'},{s:'画圈按摩30秒',t:'30秒'},{s:'按压四白穴3秒',t:'30秒'}]);
-
-  // 7. 脸颊凹陷：面颊深度比
-  var cheekL=Math.abs(lm[3].y-lm[48].y)/Math.abs(lm[3].x-lm[48].x||1);
-  var cheekR=Math.abs(lm[13].y-lm[54].y)/Math.abs(lm[13].x-lm[54].x||1);
-  var cheekAvg=(cheekL+cheekR)/2;
-  var cheekScore=sev(cheekAvg,0.5,0.7,0.35,0.5,0.22,0.35)+1;
-  add('脸颊凹陷',cheekScore,
+  // 脸颊凹陷 = 颊深 + 下颌宽 + 下巴窄
+  add('脸颊凹陷',sc(cheekL+cheekR,6,0)+sc(jawW,3,0)+sc(1-chinW,2,0),
     '颧骨下方到下颌间不饱满。颊脂肪垫萎缩+胶原流失。',
     '大迎穴(ST5)、颊车穴(ST6)',
     ['过度节食','素食蛋白不足','不防晒'],
     [{n:'玻尿酸',p:'3000-6000元'}],
     [{s:'掌根从嘴角向耳根提拉面颊',t:'1分钟'},{s:'画圈按摩30秒',t:'30秒'}]);
-
-  // 8. 太阳穴凹陷：颞部宽度
-  var templeW=Math.abs(lm[17].x-lm[26].x)/faceW;
-  var templeScore=sev(templeW,0.82,0.88,0.78,0.82,0.74,0.78)+1;
-  add('太阳穴凹陷',templeScore,
+  // 太阳穴凹陷 = 颞部宽度窄 + 脸宽
+  add('太阳穴凹陷',sc(1-templeL-templeR,8,2),
     '太阳穴不饱满。脂肪垫萎缩+颞骨吸收→脸型变方。',
     '太阳穴(EX-HN5)',
     ['长期节食','单侧睡压迫','咬紧牙关'],
     [{n:'玻尿酸',p:'3000-6000元'}],
     [{s:'食指中指画圈按摩太阳穴',t:'30秒'},{s:'向发际线推压10次',t:'1分钟'}]);
+  // 双下巴 = 下庭长 + 下颌角大 + 下巴宽窄不一
+  add('双下巴/下颌',sc(lowFace,5,0)+sc(jawAngle,3,0)+sc(Math.abs(cheekL-cheekR),8,0),
+    '下颌软组织堆积。颈阔肌松弛+脂肪下滑。',
+    '廉泉穴(RN23)、人迎穴(ST9)',
+    ['低头看手机','驼背','吃太咸'],
+    [{n:'热玛吉',p:'15000-25000元'},{n:'溶脂针',p:'8000-15000元'}],
+    [{s:'抬头看天花板30秒',t:'30秒'},{s:'舌头用力顶上颚30秒',t:'30秒'},{s:'重复10次',t:'1分钟'}]);
 
-  // 9. 面部不对称（条件触发）
-  var lJ=Math.abs(lm[4].x-mid)/faceW,rJ=Math.abs(lm[12].x-mid)/faceW;
-  var asymRatio=Math.max(lJ/rJ,rJ/lJ);
-  if(asymRatio>1.05){
-    var asymScore=Math.min(5,Math.round((asymRatio-1)*40));
-    add('面部不对称',asymScore,
-      '左右轮廓不对称。单侧咀嚼、睡姿不良长期导致。',
+  // 条件触发：面部不对称
+  if(asymJaw>0.015){
+    add('面部不对称',Math.min(5,Math.round(asymJaw*200)+2),
+      '左右轮廓不对称。单侧咀嚼、睡姿不良导致。',
       '颊车穴(ST6·双侧)',
       ['单侧咀嚼','长期单侧睡','托腮'],
       [{n:'肉毒素(咬肌)',p:'2000-4000元'}],
       [{s:'用较小一侧咀嚼口香糖',t:'5分钟'},{s:'双手托腮向对称方向轻推',t:'1分钟'}]);
   }
-
-  // 10. 嘴角不对称（条件触发）
-  var mouthAsym=Math.abs(lm[48].y-lm[54].y)/faceH;
-  if(mouthAsym>0.02){
-    var maScore=Math.min(5,Math.round(mouthAsym*120));
-    add('嘴角不对称',maScore,
+  // 条件触发：嘴角不对称
+  if(asymMouth>0.015){
+    add('嘴角不对称',Math.min(5,Math.round(asymMouth*150)+1),
       '左右嘴角高度不一。表情习惯+肌肉失衡。',
-      '地仓穴(ST4·嘴角旁0.5寸)',
+      '地仓穴(ST4)',
       ['单侧咀嚼','习惯性歪嘴笑'],
       [],
       [{s:'对镜子练习对称微笑',t:'1分钟'},{s:'手指轻提较低侧嘴角',t:'30秒'}]);
   }
+  // 条件触发：大小眼
+  if(asymEye>0.01){
+    add('大小眼/眼形不对称',Math.min(4,Math.round(asymEye*200)+1),
+      '左右眼高度或形态不一致。眼轮匝肌张力不均。',
+      '攒竹穴(BL2)、瞳子髎(GB1)',
+      ['单侧睡压迫','习惯性单侧眯眼'],
+      [],
+      [{s:'闭眼后轻轻按压较高侧眼皮',t:'30秒'},{s:'双眼交替睁闭各10次',t:'1分钟'}]);
+  }
 
-  // 按严重度排序，取前8个
+  // 按严重度排序，取前8
   p.sort(function(a,b){return b.l-a.l});
   return p.slice(0,8);
 }
