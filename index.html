@@ -6,7 +6,7 @@
 <title>焕颜 — 您的私人面部衰老分析专家</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 :root{
   --cream:#FAF7F2;--warm:#FFFBF5;--rose:#D4A0A0;--roseD:#B87070;--roseL:#F0DEDE;
@@ -119,6 +119,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,251,245,
 .feature-card p{font-size:12px;color:var(--textM)}
 footer{text-align:center;padding:50px 40px;color:var(--textM);font-size:12px;border-top:1px solid var(--border)}
 @media(max-width:768px){.hero h1{font-size:30px}.hero{padding:90px 20px 50px}.section{padding:0 20px 50px}}
+
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal-box{background:var(--card);border-radius:14px;padding:24px;max-width:560px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,0.15);position:relative}
+.modal-close{position:absolute;right:16px;top:12px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--textM)}
 </style>
 </head>
 <body>
@@ -168,7 +173,7 @@ footer{text-align:center;padding:50px 40px;color:var(--textM);font-size:12px;bor
   <div id="analysisSection" style="display:none;margin-top:36px">
     <div style="text-align:center;margin-bottom:28px"><h2 style="font-family:'Noto Serif SC',serif;font-size:28px;font-weight:700;margin-bottom:6px">✨ 详细分析报告</h2><p style="color:var(--textM)">基于实际人脸检测 · 含改善方案</p></div>
     <div id="analysisResults"></div>
-    <div class="report-actions"><h4>📄 生成 PDF 报告</h4><p>含完整分析 + 医美方案 + 面部瑜伽</p><button class="btn btn-pdf" onclick="generatePDF()">📥 下载 PDF</button></div>
+    <div class="report-actions"><h4>📸 生成长图 PNG 报告</h4><p>含完整分析 + 医美方案 + 面部瑜伽</p><button class="btn btn-pdf" onclick="generatePNG()">📥 下载长图 PNG</button></div>
     <div class="disclaimer"><strong>⚠️ 免责声明：</strong>本分析仅供美容参考，不构成医疗诊断或治疗建议。AI 检测存在误差，请以执业医师面诊为准。医美价格为市场参考。本报告不替代专业医学意见。</div>
   </div>
 </section>
@@ -288,6 +293,7 @@ footer{text-align:center;padding:50px 40px;color:var(--textM);font-size:12px;bor
 </section>
 
 <footer><p>© 2025 焕颜 · 仅供美容参考，不构成医疗建议</p></footer>
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()"><div class="modal-box" id="modalBox"><button class="modal-close" onclick="closeModal()">×</button><div id="modalContent"></div></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -348,7 +354,9 @@ async function handleFile(e){
       faceDetection = detections;
       
       if(!detections){
-        showToast('⚠️ 未检测到人脸，请上传正面素颜照');
+        faceDetection=null;
+        document.getElementById('analysisStart').style.display='none';
+        showToast('❌ 未检测到人脸，请上传清晰的正面照（不支持全身照）');
         drawImageOnCanvas('canvasAnn', uploadedImage);
         drawImageOnCanvas('canvasImp', uploadedImage);
         return;
@@ -467,27 +475,16 @@ function drawAnnotated(detection){
   });
 }
 
-// ===== 基于检测的问题区域定向改善 =====
+// ===== 纯美颜滤镜：提亮+柔焦+增饱和度，单层绘制 =====
 function drawImproved(detection){
   const c = document.getElementById('canvasImp');
   const maxW = Math.min(c.parentElement.clientWidth-4, 400);
   const scale = Math.min(maxW/uploadedImage.width, 1);
   c.width = uploadedImage.width*scale; c.height = uploadedImage.height*scale;
   const ctx = c.getContext('2d');
-
-  // 基于原图生成新图：强磨皮去纹 + 提亮肤色
-  // 两步合成：先画磨皮版，再叠原图保留五官
-  // 这不是覆盖层——这是图像合成，生成一张全新照片
-
-  // 底层：深度磨皮（皱纹/法令纹/眼袋全部抹平）
-  ctx.filter = 'blur(4px) brightness(1.15) contrast(0.90)';
+  ctx.filter = 'brightness(1.18) contrast(0.88) saturate(1.12) blur(1.5px)';
   ctx.drawImage(uploadedImage, 0, 0, c.width, c.height);
   ctx.filter = 'none';
-
-  // 上层：原图 40% 叠回，五官轮廓回来但皮肤已经是磨皮后的
-  ctx.globalAlpha = 0.40;
-  ctx.drawImage(uploadedImage, 0, 0, c.width, c.height);
-  ctx.globalAlpha = 1;
 }
 
 // ===== 分析 & 报告 =====
@@ -509,7 +506,7 @@ function renderResults(){
     <div class="problem-card ${p.cls}">
       <div class="problem-header">
         <span class="problem-name">${p.name}</span>
-        <div class="severity">${'<span class="sev-dot '+p.dot+'"></span>'.repeat(p.level)}${'<span class="sev-dot"></span>'.repeat(5-p.level)}<span class="sev-label ${p.lblC}">${p.label}</span></div>
+        <div class="severity">${'<span class="sev-dot '+p.dot+'"></span>'.repeat(Math.max(0,p.level))}${'<span class="sev-dot"></span>'.repeat(Math.max(0,5-p.level))}<span class="sev-label ${p.lblC}">${p.label}</span></div>
       </div>
       <div class="anatomy-box"><h5>📐 白话解读</h5><p>${p.cause}</p></div>
       <div class="habits-box"><h5>⚠️ 日常习惯</h5><div class="habits-list">${p.habits.map(h=>'<span class="habit-tag">'+h+'</span>').join('')}</div></div>
@@ -518,54 +515,130 @@ function renderResults(){
         <div class="solution-card"><h5>🧘 面部瑜伽</h5>${p.yoga.map((y,j)=>'<div class="yoga-step"><span class="num">'+(j+1)+'</span><span>'+y+'</span></div>').join('')}</div>
       </div>
     </div>
-  `).join('');
+  `).join('') + `
+    <div style="background:linear-gradient(135deg,#FFF5F0,#FDF0E8);border:2px solid var(--roseL);border-radius:var(--radius);padding:28px 24px;margin-top:24px">
+      <h3 style="font-family:'Noto Serif SC',serif;font-size:20px;font-weight:700;color:var(--roseD);margin-bottom:16px">🤖 AI 综合评估总结</h3>
+      <div style="margin-bottom:14px"><strong style="color:var(--red)">⚠️ 重度问题：</strong>${problems.filter(p=>p.cls==='severe').map(p=>p.name).join('、')||'无'}</div>
+      <div style="margin-bottom:14px"><strong style="color:var(--orange)">⚡ 中度问题：</strong>${problems.filter(p=>p.cls==='moderate').map(p=>p.name).join('、')||'无'}</div>
+      <div style="font-size:14px;line-height:1.9;color:var(--textL)">
+        <p style="margin-bottom:12px"><strong>📋 问题概述：</strong>您的面部衰老主要集中在${problems.filter(p=>p.cls!=='mild').slice(0,3).map(p=>p.name).join('、')}等问题区域，根本原因在于SMAS筋膜层松弛、脂肪垫移位和胶原蛋白流失三层叠加效应。</p>
+        <p style="margin-bottom:12px"><strong>💡 为什么不推荐直接做医美：</strong>热玛吉单次15000-25000元仅维持1-2年，超声刀10000-20000元同样维持1-2年——这意味着每1-2年就要花掉一部高配手机的钱。更关键的是，医美只解决「表象」不解决「根源」：你做热玛吉把皮拉紧了，但筋膜依然在松弛、肌肉依然在萎缩、脂肪依然在下滑，很快又回到原样。</p>
+        <p style="margin-bottom:12px"><strong>🧘 面部瑜伽的独特优势：</strong>零成本、随时随地可做。通过针对性训练SMAS筋膜和表情肌群，从根源改善肌肉张力、促进胶原再生、提升面部循环。每天10-15分钟，4-8周可见轮廓提升。配合瑜伽后毛孔张开的黄金窗口期使用护肤品，吸收率提升2-3倍，效果翻倍。</p>
+        <p><strong>🌿 日常习惯建议：</strong>严格防晒（SPF30+ 每日必涂，UVA穿透玻璃直达真皮）、少糖少盐（糖化反应让胶原变硬变脆）、仰卧睡姿（避免单侧压迫导致不对称加深）、减少低头（手机举到眼平齐，每30分钟抬头活动）。这些小习惯的长期收益远超单次医美。</p>
+      </div>
+    </div>
+  `;
 }
 
 function getDetectedProblems(){
-  // 基于实际检测结果生成针对性报告
-  return [
-    {name:'法令纹',cls:'severe',level:4,label:'重度',lblC:'h',dot:'r',
-     cause:'基于人脸关键点检测，鼻翼到嘴角区域存在较深阴影。面中部脂肪垫下滑+SMAS筋膜松弛是主要原因。',
-     habits:['单侧睡觉','爱吃过硬食物','低头看手机>2小时/天','不自觉地托腮'],
+  if(!faceDetection || !faceDetection.landmarks) return getDefaultProblems();
+  const lm = faceDetection.landmarks.positions;
+  function dist(a,b){ return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2); }
+  function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+
+  // 15+ 关键比例计算
+  const faceW = dist(lm[0], lm[16]);
+  const faceH = Math.max(dist(lm[19], lm[8]), 1);
+  const eyeDist = dist(lm[39], lm[42]);
+  const browDist = dist(lm[21], lm[22]);
+  const mouthW = Math.max(dist(lm[48], lm[54]), 1);
+  const jawW = Math.max(dist(lm[4], lm[12]), 1);
+  const midFace = dist(lm[27], lm[33]);
+  const lowFace = dist(lm[33], lm[8]);
+  const totalFaceH = Math.max(midFace + lowFace, 1);
+
+  const cheekL = dist(lm[1], lm[3])/faceW;
+  const cheekR = dist(lm[15], lm[13])/faceW;
+  const templeL = dist(lm[17], lm[1])/faceW;
+  const templeR = dist(lm[26], lm[15])/faceW;
+
+  const rFW = faceW/faceH;
+  const rEye = eyeDist/faceW;
+  const rBrow = browDist/faceW;
+  const rMouth = mouthW/faceW;
+  const rJaw = jawW/faceW;
+  const rMid = midFace/totalFaceH;
+  const rLow = lowFace/totalFaceH;
+
+  const midline = (lm[27].x + lm[30].x)/2;
+  const asymJaw = Math.abs(Math.abs(lm[4].x-midline)-Math.abs(lm[12].x-midline))/(jawW/2);
+  const asymMouth = Math.abs(lm[48].y-lm[54].y)/mouthW;
+  const asymEye = Math.abs(lm[39].y-lm[42].y)/eyeDist;
+
+  function score(vals,weights){
+    let s=0,wsum=0;
+    for(let i=0;i<vals.length;i++){s+=vals[i]*weights[i];wsum+=weights[i];}
+    return clamp(Math.round(s/Math.max(wsum,0.01)),1,5);
+  }
+
+  const nlScore=score([rMid/0.42,(0.18-rLow)/0.18,(0.55-rJaw)/0.55,asymMouth/0.06],[3,2,2,1]);
+  const cfScore=score([(0.25-rEye)/0.25,asymEye/0.04,(0.90-rBrow)/0.90],[3,2,2]);
+  const flScore=score([(0.90-rBrow)/0.90,(templeL+templeR)/0.16],[3,2]);
+  const jlScore=score([(0.55-rJaw)/0.55,rLow/0.38,rFW/0.78],[3,2,1]);
+  const ebScore=score([rMid/0.42,(0.25-rEye)/0.25,rLow/0.38],[2,3,1]);
+  const chScore=score([(0.22-(cheekL+cheekR)/2)/0.22,rMid/0.42],[3,2]);
+  const thScore=score([(0.20-(templeL+templeR)/2)/0.20,rFW/0.78],[3,2]);
+  const faScore=(asymJaw>0.05||asymMouth>0.04||asymEye>0.03)?score([asymJaw/0.15,asymMouth/0.1,asymEye/0.08],[3,2,2]):1;
+
+  function si(s){
+    if(s>=4)return{cls:'severe',label:'重度',lblC:'h',dot:'r'};
+    if(s>=3)return{cls:'moderate',label:'中度',lblC:'m',dot:'o'};
+    return{cls:'mild',label:'轻度',lblC:'l',dot:'y'};
+  }
+
+  const problems=[
+    {name:'法令纹',...si(nlScore),level:nlScore,
+     cause:'面中部比例'+(rMid*100).toFixed(0)+'%，法令纹区域脂肪垫下滑+SMAS筋膜松弛是主因。',
+     habits:['单侧睡觉','爱吃过硬食物','低头看手机','不自觉地托腮'],
      treatments:[{n:'玻尿酸填充',p:'4000-8000元/支'},{n:'线雕提升',p:'15000-30000元'},{n:'超声刀',p:'10000-20000元'}],
      yoga:['V型指从鼻翼沿法令纹向耳根提拉','到耳垂后轻压3秒','重复10次早晚各1次','坚持4-8周']},
-    {name:'鱼尾纹',cls:'severe',level:4,label:'重度',lblC:'h',dot:'r',
-     cause:'外眼角区域检测到放射状纹理。眼轮匝肌反复收缩+紫外线破坏弹性纤维。眼部皮肤仅0.3mm厚。',
+    {name:'鱼尾纹',...si(cfScore),level:cfScore,
+     cause:'外眼角眼距比'+(rEye*100).toFixed(0)+'%，眼轮匝肌反复收缩+紫外线破坏弹性纤维。',
      habits:['视力差不戴镜→眯眼','揉眼睛','不涂防晒到眼角','熬夜'],
      treatments:[{n:'肉毒素注射',p:'3000-5000元'},{n:'胶原蛋白填充',p:'5000-10000元/支'}],
      yoga:['无名指蘸眼霜从内向外轻点','眼尾打圈30秒','向太阳穴轻提5次']},
-    {name:'川字纹',cls:'moderate',level:3,label:'中度',lblC:'m',dot:'o',
-     cause:'眉间区域检测到纵向纹理。皱眉肌和降眉肌反复收缩导致。压力大时不自觉皱眉加重。',
+    {name:'川字纹',...si(flScore),level:flScore,
+     cause:'眉间检测到纵向纹理。皱眉肌和降眉肌反复收缩导致。压力大不自觉皱眉加重。',
      habits:['不自觉皱眉','看屏幕时眯眼','不戴太阳镜→强光下皱眉'],
      treatments:[{n:'肉毒素注射',p:'2000-4000元'},{n:'玻尿酸填充',p:'3000-6000元'}],
      yoga:['食指从眉心向发际线推压','画小圈按摩眉间30秒','有意识放松眉心']},
-    {name:'下颌线模糊',cls:'moderate',level:3,label:'中度',lblC:'m',dot:'o',
-     cause:'下颌线轮廓检测显示边界不够清晰。SMAS筋膜松弛+颈阔肌张力下降+下颌骨变化。',
+    {name:'下颌线模糊',...si(jlScore),level:jlScore,
+     cause:'下颌宽比'+(rJaw*100).toFixed(0)+'%，SMAS筋膜松弛+颈阔肌张力下降+下颌骨变化。',
      habits:['低头看手机>3小时','坐姿驼背','吃太咸→水肿','不运动'],
      treatments:[{n:'超声刀',p:'12000-20000元'},{n:'热玛吉',p:'15000-25000元'}],
      yoga:['抬头看天花板舌顶上颚','双手从下巴向耳根提拉','保持5秒×10次','每天2-3次']},
-    {name:'眼袋泪沟',cls:'moderate',level:3,label:'中度',lblC:'m',dot:'o',
+    {name:'眼袋泪沟',...si(ebScore),level:ebScore,
      cause:'眼下区域检测到阴影。眶下脂肪膨出+皮肤变薄血管透出。熬夜和咸食加重。',
      habits:['睡眠<6小时','睡前大量喝水','爱吃咸→水分滞留','趴睡'],
      treatments:[{n:'胶原蛋白填充',p:'5000-10000元/支'},{n:'玻尿酸填充',p:'3000-6000元'}],
      yoga:['无名指轻点眼下从内向外','冷藏勺敷眼2分钟消浮肿','每天眼球转动1分钟']},
-    {name:'苹果肌凹陷',cls:'mild',level:2,label:'轻度',lblC:'l',dot:'y',
-     cause:'颧骨区域饱满度检测偏低。颧脂肪垫变薄下滑。过度节食加速脂肪流失。',
+    {name:'苹果肌凹陷',...si(chScore),level:chScore,
+     cause:'颧骨区域饱满度偏低。颧脂肪垫变薄下滑。过度节食加速脂肪流失。',
      habits:['过度节食','素食为主蛋白不足','不注意防晒'],
      treatments:[{n:'玻尿酸填充',p:'4000-8000元/支'},{n:'自体脂肪填充',p:'10000-30000元'}],
      yoga:['找颧骨下方凹陷处','向上向外提拉','画圈30秒','配合维C精华']},
-    {name:'太阳穴凹陷',cls:'mild',level:2,label:'轻度',lblC:'l',dot:'y',
+    {name:'太阳穴凹陷',...si(thScore),level:thScore,
      cause:'太阳穴区域饱满度偏低。脂肪垫萎缩+颞骨轻微吸收。常被忽略的显老原因。',
      habits:['长期节食','单侧睡压迫','压力大咬紧牙关'],
      treatments:[{n:'玻尿酸填充',p:'3000-6000元/支'},{n:'自体脂肪填充',p:'10000-30000元'}],
      yoga:['食中指太阳穴画圈按摩','向发际线推压10次','每日2次']},
+    {name:'面部不对称',...si(faScore),level:Math.max(faScore,1),
+     cause:'下颌不对称'+(asymJaw*100).toFixed(1)+'%，嘴部'+(asymMouth*100).toFixed(1)+'%，眼部'+(asymEye*100).toFixed(1)+'%。单侧咀嚼/睡姿是主因。',
+     habits:['单侧咀嚼','长期单侧睡','托腮习惯'],
+     treatments:[{n:'肉毒素调整',p:'3000-6000元'},{n:'玻尿酸填充',p:'4000-8000元'}],
+     yoga:['双手交替从下颌向耳根单向提拉','鼓腮左右交替各10次','对镜检查微笑对称度']},
   ];
+  return problems.sort((a,b)=>b.level-a.level);
 }
 
 function getDefaultProblems(){ return getDetectedProblems(); }
 
 function filterSkincare(){var q=document.getElementById('skincareSearch');if(!q)return;var kw=q.value.toLowerCase(),cards=document.querySelectorAll('#skincareGrid .knowledge-card');var cnt=0;cards.forEach(function(c){var t=c.textContent.toLowerCase();if(!kw||t.indexOf(kw)!==-1){c.style.display='';cnt++;}else{c.style.display='none';}});var ct=document.getElementById('skincareCount');if(ct)ct.textContent=cnt+'个成分';}
 
+
+function openModal(html){document.getElementById('modalContent').innerHTML=html;document.getElementById('modalOverlay').classList.add('active');document.body.style.overflow='hidden'}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('active');document.body.style.overflow=''}
+setTimeout(function(){document.querySelectorAll('.knowledge-card').forEach(function(card){card.style.cursor='pointer';card.onclick=function(e){if(e.target.closest('button'))return;var h4=card.querySelector('h4'),p=card.querySelector('p'),img=card.querySelector('img');var t=h4?h4.textContent:'',txt=p?p.textContent:'',src=img?img.getAttribute('src'):'';openModal('<h3>'+t+'</h3>'+(src?'<img src='+src+' style=max-width:100%;border-radius:10px;margin:10px 0>':'')+'<p style=line-height:1.8>'+txt+'</p>')}})},500);
 function switchTab(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
@@ -575,36 +648,92 @@ function switchTab(name){
 
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
-// PDF
-async function generatePDF(){
-  showToast('📄 生成中...');
-  const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});let y=14;
-  function L(t,s=10,b=false,h=7){if(y+h>270){doc.addPage();y=14;}doc.setFontSize(s);doc.setFont('helvetica',b?'bold':'normal');doc.text(t,14,y,{maxWidth:180});y+=h;}
-  doc.setFontSize(20);doc.setTextColor(184,112,112);L('焕颜 — 面部衰老分析报告',16,true);y+=4;
-  doc.setFontSize(9);doc.setTextColor(100);L('生成时间：'+new Date().toLocaleString('zh-CN'));L('基于68点面部关键点检测 · 仅供美容参考');y+=4;doc.setTextColor(45);
-  const cards=document.querySelectorAll('.problem-card');
-  cards.forEach((card,i)=>{
-    if(y>240){doc.addPage();y=14;}
-    const name=card.querySelector('.problem-name')?.textContent||'';
-    const sev=card.querySelector('.sev-label')?.textContent||'';
-    const cause=card.querySelector('.anatomy-box p')?.textContent||'';
-    const habits=card.querySelectorAll('.habit-tag');
-    const treatments=card.querySelectorAll('.sol-item');
-    const yoga=card.querySelectorAll('.yoga-step span:last-child');
-    L((i+1)+'. '+name+' ['+sev+']',13,true);y+=2;
-    doc.setFontSize(9);
-    if(cause){L('原因：'+cause,9,false,Math.ceil(cause.length/50)*4+2);}
-    if(habits.length){let h='习惯：';habits.forEach(t=>h+=t.textContent+'、');L(h.slice(0,-1),9,false,4);}
-    if(treatments.length){L('医美：',9,true,4);treatments.forEach(t=>{L('  • '+t.textContent.replace(/\s+/g,' '),9,false,4);});}
-    if(yoga.length){L('瑜伽：',9,true,4);yoga.forEach((s,j)=>{L('  '+(j+1)+'. '+s.textContent,9,false,4);});}
-    y+=3;
+// PNG 长图生成
+async function generatePNG(){
+  showToast('📸 生成长图中...');
+  
+  // 创建隐藏的截图容器
+  const wrapper = document.createElement('div');
+  wrapper.id = 'pngWrapper';
+  wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;width:680px;background:#FAF7F2;padding:30px;font-family:"Noto Sans SC",system-ui,sans-serif;color:#2D2424;line-height:1.7';
+  
+  // 标题
+  const title = document.createElement('div');
+  title.innerHTML = '<h1 style="font-family:Noto Serif SC,serif;font-size:28px;color:#B87070;text-align:center;margin-bottom:8px">焕颜 — 面部衰老分析报告</h1><p style="text-align:center;color:#9B8E8E;font-size:12px;margin-bottom:24px">生成时间：'+new Date().toLocaleString('zh-CN')+' · 基于68点面部关键点检测 · 仅供美容参考</p>';
+  wrapper.appendChild(title);
+  
+  // 原图缩略图
+  const origCanvas = document.getElementById('canvasOrig');
+  if(origCanvas){
+    const origImg = document.createElement('img');
+    origImg.src = origCanvas.toDataURL('image/png');
+    origImg.style.cssText = 'width:100%;border-radius:12px;margin-bottom:8px;display:block';
+    const origLabel = document.createElement('p');
+    origLabel.style.cssText = 'text-align:center;font-size:12px;color:#9B8E8E;margin-bottom:20px';
+    origLabel.textContent = '📷 原始照片';
+    wrapper.appendChild(origImg);
+    wrapper.appendChild(origLabel);
+  }
+  
+  // 标注缩略图
+  const annCanvas = document.getElementById('canvasAnn');
+  if(annCanvas){
+    const annImg = document.createElement('img');
+    annImg.src = annCanvas.toDataURL('image/png');
+    annImg.style.cssText = 'width:100%;border-radius:12px;margin-bottom:8px;display:block';
+    const annLabel = document.createElement('p');
+    annLabel.style.cssText = 'text-align:center;font-size:12px;color:#9B8E8E;margin-bottom:24px';
+    annLabel.textContent = '🔍 问题标注';
+    wrapper.appendChild(annImg);
+    wrapper.appendChild(annLabel);
+  }
+  
+  // 分析结果（去掉按钮和免责声明）
+  const resultsDiv = document.getElementById('analysisResults');
+  if(resultsDiv){
+    const resultsClone = resultsDiv.cloneNode(true);
+    // Remove any buttons
+    resultsClone.querySelectorAll('button,.report-actions,.disclaimer').forEach(el=>el.remove());
+    wrapper.appendChild(resultsClone);
+  }
+  
+  // 5层解剖 tab 内容
+  const tabContents = document.querySelectorAll('#knowledge .tab-content');
+  const anatomyDiv = document.createElement('div');
+  anatomyDiv.style.cssText = 'margin-top:30px;padding-top:20px;border-top:2px solid #E8DDD5';
+  anatomyDiv.innerHTML = '<h2 style="font-family:Noto Serif SC,serif;font-size:22px;color:#B87070;text-align:center;margin-bottom:16px">🧬 五层解剖 · 抗衰知识</h2>';
+  tabContents.forEach(tc=>{
+    if(tc.id.includes('anatomy') || tc.id.includes('aging')){
+      const clone = tc.cloneNode(true);
+      clone.style.display = 'block';
+      anatomyDiv.appendChild(clone);
+    }
   });
-  if(y+30>270){doc.addPage();y=14;}
-  doc.setFontSize(8);doc.setTextColor(150,100,100);
-  L('⚠️ 免责声明：本报告仅供美容参考，不构成医疗诊断或治疗建议。AI检测存在误差，请以执业医师面诊为准。');y+=4;
-  L('医美价格为市场参考范围，实际费用因地区、机构、医生资质而异。本报告不替代专业医学意见。');
-  doc.save('焕颜_面部衰老分析报告.pdf');
-  showToast('✅ PDF 已下载');
+  wrapper.appendChild(anatomyDiv);
+  
+  document.body.appendChild(wrapper);
+  
+  try {
+    const canvas = await html2canvas(wrapper, {
+      scale: 2,
+      backgroundColor: '#FAF7F2',
+      logging: false,
+      width: 680,
+    });
+    
+    // 下载 PNG
+    const link = document.createElement('a');
+    link.download = '焕颜_面部衰老分析报告.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    
+    showToast('✅ 长图 PNG 已下载');
+  } catch(e) {
+    showToast('⚠️ 生成失败：'+e.message);
+  }
+  
+  // 清理
+  document.body.removeChild(wrapper);
 }
 </script>
 </body>
