@@ -384,6 +384,7 @@ function analyzeFace(d){
   }
 
   function add(n,l,cause,acup,habits,treat,yoga){
+    l=Math.min(5,Math.max(1,l));
     var lev=l>=4?'重度':l>=3?'中度':l>=2?'轻度':'无';
     var lCls=l>=4?'h':l>=3?'m':'l',dotCls=l>=4?'f':l>=3?'o':'y',color=l>=4?'red':l>=3?'orange':'yellow';
     if(l>=2)p.push({n:n,l:l,lev:lev,lCls:lCls,dotCls:dotCls,color:color,cause:cause,acup:acup,habits:habits,treatments:treat,yoga:yoga});
@@ -533,7 +534,9 @@ function renderResults(){
   problems.forEach(function(p){
     html+='<div class="problem-card" style="border-left-color:var(--'+p.color+')">';
     html+='<div class="problem-name">'+p.n+'</div>';
-    html+='<div class="severity">'+'<span class="sev-dot '+p.dotCls+'"></span>'.repeat(p.l)+'<span class="sev-dot"></span>'.repeat(5-p.l)+'<span class="sev-label '+p.lCls+'">'+p.lev+'</span></div>';
+    var dots='';for(var k=0;k<Math.min(p.l,5);k++)dots+='<span class="sev-dot '+p.dotCls+'"></span>';
+    for(var k=0;k<Math.max(0,5-p.l);k++)dots+='<span class="sev-dot"></span>';
+    html+='<div class="severity">'+dots+'<span class="sev-label '+p.lCls+'">'+p.lev+'</span></div>';
     html+='<div class="info-box"><h5>📐 医学解剖白话解读</h5><p>'+p.cause+'</p></div>';
     html+='<div class="info-box"><h5>⚠️ 加重问题的日常习惯</h5><div class="habits-list">'+p.habits.map(function(h){return'<span class="habit-tag">'+h+'</span>'}).join('')+'</div></div>';
     html+='<div class="info-box"><h5>📍 穴位解析</h5><p>'+p.acup+'</p></div>';
