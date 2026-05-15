@@ -524,6 +524,7 @@ function getDefaultProblems(){
 }
 
 function renderResults(){
+  try{
   var problems=analyzeFace(window.faceDetection);
   var severe=problems.filter(function(p){return p.l>=4;});
   var moderate=problems.filter(function(p){return p.l===3;});
@@ -552,6 +553,12 @@ function renderResults(){
   html+='<div style="text-align:center;margin:20px 0"><button class="btn btn-dark" onclick="generatePDF()">📥 下载完整长图（PNG）</button></div>';
   html+='<div class="disclaimer"><strong>⚠️ 免责声明：</strong>本分析仅供美容参考，不构成医疗诊断或治疗建议。AI检测存在误差，请以执业医师面诊为准。医美价格为市场参考。本报告不替代专业医学意见。</div>';
   document.getElementById('results').innerHTML=html;
+  document.getElementById('results').style.display='block';
+  }catch(e){
+    console.error('renderResults error:',e);
+    document.getElementById('results').innerHTML='<div style="padding:20px;color:var(--red)">⚠️ 分析出错：'+e.message+'</div>';
+    document.getElementById('results').style.display='block';
+  }
 }
 
 function startAnalysis(){
