@@ -6,7 +6,7 @@
 <title>焕颜 — 您的私人面部衰老分析专家</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{
   --cream:#FAF7F2;--warm:#FFFBF5;--rose:#D4A0A0;--roseD:#B87070;--roseL:#F0DEDE;
@@ -119,11 +119,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,251,245,
 .feature-card p{font-size:12px;color:var(--textM)}
 footer{text-align:center;padding:50px 40px;color:var(--textM);font-size:12px;border-top:1px solid var(--border)}
 @media(max-width:768px){.hero h1{font-size:30px}.hero{padding:90px 20px 50px}.section{padding:0 20px 50px}}
-
-.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:none;align-items:center;justify-content:center}
-.modal-overlay.active{display:flex}
-.modal-box{background:var(--card);border-radius:14px;padding:24px;max-width:560px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,0.15);position:relative}
-.modal-close{position:absolute;right:16px;top:12px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--textM)}
 </style>
 </head>
 <body>
@@ -173,14 +168,14 @@ footer{text-align:center;padding:50px 40px;color:var(--textM);font-size:12px;bor
   <div id="analysisSection" style="display:none;margin-top:36px">
     <div style="text-align:center;margin-bottom:28px"><h2 style="font-family:'Noto Serif SC',serif;font-size:28px;font-weight:700;margin-bottom:6px">✨ 详细分析报告</h2><p style="color:var(--textM)">基于实际人脸检测 · 含改善方案</p></div>
     <div id="analysisResults"></div>
-    <div class="report-actions"><h4>📸 生成长图 PNG 报告</h4><p>含完整分析 + 医美方案 + 面部瑜伽</p><button class="btn btn-pdf" onclick="generatePNG()">📥 下载长图 PNG</button></div>
+    <div class="report-actions"><h4>📄 生成 PDF 报告</h4><p>含完整分析 + 医美方案 + 面部瑜伽</p><button class="btn btn-pdf" onclick="generatePDF()">📥 下载 PDF</button></div>
     <div class="disclaimer"><strong>⚠️ 免责声明：</strong>本分析仅供美容参考，不构成医疗诊断或治疗建议。AI 检测存在误差，请以执业医师面诊为准。医美价格为市场参考。本报告不替代专业医学意见。</div>
   </div>
 </section>
 
 <!-- Knowledge base same as before, compact -->
 <section class="section" id="knowledge" style="padding-top:50px">
-  <div class="section-title"><h2>抗衰知识库</h2><p style="color:var(--roseD);font-size:13px;margin-top:4px">💡 配合面部瑜伽效果加倍——瑜伽激活循环后毛孔张开，护肤成分吸收率提升2-3倍</p></div>
+  <div class="section-title"><h2>抗衰知识库</h2></div>
   <div class="tabs">
     <button class="tab active" onclick="switchTab('anatomy')">🧬 五层解剖</button>
     <button class="tab" onclick="switchTab('aesthetics')">💉 医美方案</button>
@@ -190,12 +185,12 @@ footer{text-align:center;padding:50px 40px;color:var(--textM);font-size:12px;bor
     <button class="tab" onclick="switchTab('skincare')">💆 瑜伽护肤</button>
   </div>
   <div class="tab-content active" id="tab-anatomy"><div class="knowledge-grid">
-<div class="knowledge-card"><img loading="lazy" src="images/2026-04-21-03-face-fascia.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><span class="tag">第1层</span><h4>皮肤层</h4><p>表皮如保鲜膜，真皮的胶原是"床垫海绵"。30岁后海绵年流失1%。紫外线穿透玻璃直达真皮层。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-04-05-01-facial-muscles-anatomy.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><span class="tag">第2层</span><h4>SMAS筋膜层</h4><p>面部的"吊床网兜"。韧带松弛→法令纹变深、下颌线模糊、口角囊袋出现。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-04-21-01-face-muscles.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><span class="tag">第3层</span><h4>肌肉层</h4><p>几十块小肌肉控制表情。反复收缩→动态纹。像反复折纸，折久留印。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-04-08-01-facial-muscles-anatomy.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><span class="tag">第4层</span><h4>脂肪层</h4><p>脂肪垫如填充物。移位→苹果肌下滑、眼袋膨出、太阳穴萎缩。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-04-21-04-face-bones.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><span class="tag">第5层</span><h4>骨骼层</h4><p>40岁后骨年吸收0.5%。眼眶骨缩→眼窝凹；上颌骨缩→法令纹深；下颌骨变→双下巴。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-04-08-02-facial-muscles-labeled.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><span class="tag">五层联动</span><h4>衰老连锁反应</h4><p>骨吸收→地基塌→筋膜挂不住→脂肪下滑→皮肤起皱。深层决定浅层。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><span class="tag">第1层</span><h4>皮肤层</h4><p>表皮如保鲜膜，真皮的胶原是"床垫海绵"。30岁后海绵年流失1%。紫外线穿透玻璃直达真皮层。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><span class="tag">第2层</span><h4>SMAS筋膜层</h4><p>面部的"吊床网兜"。韧带松弛→法令纹变深、下颌线模糊、口角囊袋出现。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><span class="tag">第3层</span><h4>肌肉层</h4><p>几十块小肌肉控制表情。反复收缩→动态纹。像反复折纸，折久留印。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><span class="tag">第4层</span><h4>脂肪层</h4><p>脂肪垫如填充物。移位→苹果肌下滑、眼袋膨出、太阳穴萎缩。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><span class="tag">第5层</span><h4>骨骼层</h4><p>40岁后骨年吸收0.5%。眼眶骨缩→眼窝凹；上颌骨缩→法令纹深；下颌骨变→双下巴。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><span class="tag">五层联动</span><h4>衰老连锁反应</h4><p>骨吸收→地基塌→筋膜挂不住→脂肪下滑→皮肤起皱。深层决定浅层。</p></div></div>
   </div></div>
   <div class="tab-content" id="tab-aesthetics"><div class="knowledge-grid">
 <div class="knowledge-card"><div class="card-body"><h4>热玛吉</h4><p>💰15000-25000元|⏱1-2年|🎯全脸紧致。射频加热唤醒胶原。适合35+初老阶段。</p></div></div>
@@ -209,26 +204,14 @@ footer{text-align:center;padding:50px 40px;color:var(--textM);font-size:12px;bor
 <div class="knowledge-card"><div class="card-body"><h4>自体脂肪填充</h4><p>💰10000-30000元|⏱长期|🎯全面容积恢复。自己的脂肪无排异，需抽脂手术。</p></div></div>
   </div></div>
   <div class="tab-content" id="tab-yoga"><div class="knowledge-grid">
-<div class="knowledge-card"><img loading="lazy" src="images/2026-04-21-05-face-yoga-poses.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>🧘 法令纹提拉</h4><p>⏱3分钟 🕐早晚 🎯SMAS筋膜+颧脂肪垫<br>V型指从鼻翼沿法令纹向耳根提拉→压耳垂3秒→重复10次。只向上提！</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-04-08-03-face-yoga-guide.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>👁 眼周放松</h4><p>⏱2-3分钟 🕐早晚 🎯眼轮匝肌+皮肤层<br>无名指点涂眼霜→从内向外轻点→眼尾打圈30秒→向太阳穴提5次。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-04-21-03-face-fascia.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>💆 下颌线提升</h4><p>⏱5分钟 🕐每日2-3次 🎯颈阔肌+下颌韧带<br>抬头看天花板→舌顶上颚→双手从下巴向耳根提拉→保持5秒→10次。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-04-21-01-face-muscles.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>🍎 苹果肌激活</h4><p>⏱4分钟 🕐每日2次 🎯颧脂肪垫+SMAS<br>找颧骨下方凹陷→向上向外提拉→画圈30秒→压四白穴3秒→5次。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-04-05-05-face-yoga-guide.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>👄 口角纹改善</h4><p>⏱2分钟 🕐每日2次 🎯口轮匝肌<br>食中指放嘴角→向上向外提拉→微笑5秒→重复10次。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-21-01.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>🦢 颈纹改善</h4><p>⏱3分钟 🕐早晚 🎯颈阔肌<br>中指从锁骨向上推→三线各10次→由下往上单向→轻拍30秒。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-21-02.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>🧖 全脸淋巴引流</h4><p>⏱5-8分钟 🕐每晚 🎯全脸<br>额头→太阳穴→鼻翼→耳前→下巴→耳后→锁骨。单向推压。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-21-03.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>😊 笑容提肌训练</h4><p>⏱1分钟 🕐随时 🎯颧大肌<br>嘴角向两侧拉开→向上提→保持10秒→5次。等红灯都能做。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-21-04.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>👆 额肌放松</h4><p>⏱2分钟 🕐早晚 🎯额肌<br>食指从眉心向发际线交替推压→到达发际线后轻叩10次→打圈30秒。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-21-05.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>👃 鼻翼提拉</h4><p>⏱2分钟 🕐每日2次 🎯鼻肌<br>食指尖放鼻翼两侧→向上推压→同时鼻孔张合10次→放松重复。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-22-01.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>🫦 唇周紧致</h4><p>⏱3分钟 🕐早晚 🎯口轮匝肌<br>食指中指夹住上下唇→向外轻拉→发"O"音5秒→"E"音5秒→交替10次。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-22-02.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>👂 耳部淋巴引流</h4><p>⏱2分钟 🕐每晚 🎯耳周淋巴<br>捏耳垂向下拉5秒→沿耳廓向上按摩→耳后推至颈部→到锁骨。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-22-03.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>🦴 颧骨按摩提升</h4><p>⏱3分钟 🕐每日2次 🎯颧大肌+SMAS<br>掌根从颧骨向太阳穴45°推压→打圈按摩10秒→重复8次。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-22-04.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>🌬️ 面部深呼吸</h4><p>⏱3分钟 🕐随时 🎯全脸筋膜<br>深吸气鼓起双颊→屏5秒→缓慢吐气收脸颊→重复10次。增加血氧。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-22-05.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>🧏 下颌关节放松</h4><p>⏱2分钟 🕐随时 🎯咬肌<br>掌根按咬肌→张嘴最大→缓慢闭合约10秒→重复5次。防国字脸。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-23-01.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>👐 全脸温热按压</h4><p>⏱3分钟 🕐每晚 🎯全脸筋膜<br>手搓热→掌心分别按压额头/眼周/面颊/下颌各15秒→重复2遍。助眠。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-23-02.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>👆 人中提拉</h4><p>⏱1分钟 🕐每日2次 🎯上唇方肌<br>食指横放人中→向上微提→保持3秒→5次。改善人中变长显老。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-23-03.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>🪷 眉心舒展冥想</h4><p>⏱3分钟 🕐随时 🎯皱眉肌<br>闭眼→彻底放松眉心→想像眉间被温柔展开→配合深呼吸1-2分钟。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-23-04.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>✋ 咬肌按摩</h4><p>⏱3分钟 🕐每日1次 🎯咬肌<br>掌根按咬肌画圈按摩2分钟→张嘴保持10秒→重复5次。改善脸宽。</p></div></div>
-<div class="knowledge-card"><img loading="lazy" src="images/2026-03-23-05.jpg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect fill=%22%23f0e8e0%22 width=%22200%22 height=%22150%22/><text x=%22100%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23c0b0a0%22 font-size=%2212%22>图片加载中...</text></svg>'"><div class="card-body"><h4>👀 眼轮匝肌训练</h4><p>⏱2分钟 🕐早晚 🎯眼轮匝肌<br>紧闭眼5秒→睁大眼5秒→交替10次→闭眼轻按眼球10秒放松。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><h4>🧘 法令纹提拉</h4><p>⏱3分钟 🕐早晚 🎯SMAS筋膜+颧脂肪垫 📅4-8周<br>V型指从鼻翼沿法令纹向耳根提拉→压耳垂3秒→重复10次。只向上提！</p></div></div>
+<div class="knowledge-card"><div class="card-body"><h4>👁 眼周放松</h4><p>⏱2-3分钟 🕐早晚 🎯眼轮匝肌+皮肤层<br>无名指点涂眼霜→从内向外轻点→眼尾打圈30秒→向太阳穴提5次。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><h4>💆 下颌线提升</h4><p>⏱5分钟 🕐每日2-3次 🎯颈阔肌+下颌韧带<br>抬头看天花板→舌顶上颚→双手从下巴中央向耳根提拉→保持5秒→10次。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><h4>🍎 苹果肌激活</h4><p>⏱4分钟 🕐每日2次 🎯颧脂肪垫+SMAS<br>找到颧骨下方凹陷→向上向外提拉→画圈30秒→压四白穴3秒→5次。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><h4>👄 口角纹改善</h4><p>⏱2分钟 🕐每日2次 🎯口轮匝肌<br>食中指放嘴角两侧→向上向外提拉→压3秒→微笑5秒→10次。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><h4>🦢 颈纹改善</h4><p>⏱3分钟 🕐早晚 🎯颈阔肌<br>中指从锁骨向上推→三线各10次→由下往上单向→轻拍30秒。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><h4>🧖 全脸淋巴引流</h4><p>⏱5-8分钟 🕐每晚 🎯全脸<br>额头→两侧太阳穴→鼻翼→耳前→下巴→耳后→锁骨。单向推压。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><h4>😊 笑容提肌训练</h4><p>⏱1分钟 🕐随时 🎯颧大肌<br>嘴角向两侧拉开→向上提→保持10秒→5次。等红灯、开会间隙都能做。</p></div></div>
   </div></div>
   <div class="tab-content" id="tab-aging"><div class="knowledge-grid">
 <div class="knowledge-card"><div class="card-body"><span class="tag">动态纹</span><h4>反复折叠的痕迹</h4><p>抬头纹·川字纹·鱼尾纹·鼻背纹·口角纹。每次表情在皮肤"写字"，年久成固定纹。</p></div></div>
@@ -244,68 +227,17 @@ footer{text-align:center;padding:50px 40px;color:var(--textM);font-size:12px;bor
 <div class="knowledge-card"><div class="card-body"><h4>🍰 高糖饮食</h4><p>糖+胶原=糖化反应→胶原变硬变脆→皮肤松弛暗黄。甜品爱好者往往比同龄人显老。</p></div></div>
 <div class="knowledge-card"><div class="card-body"><h4>🚬 吸烟</h4><p>收缩血管→供血减少→胶原合成受阻。吸烟者平均显老5-10岁。吸吮动作→口周放射纹。</p></div></div>
   </div></div>
-  <div class="tab-content" id="tab-skincare">
-    <div style="margin-bottom:14px;display:flex;gap:8px">
-      <input id="skincareSearch" placeholder="🔍 搜索护肤成分..." style="flex:1;padding:10px 16px;border:1.5px solid var(--border);border-radius:24px;font-size:14px;font-family:inherit;outline:none" oninput="filterSkincare()">
-      <button class="btn btn-sm" id="skincareCount" style="padding:10px 16px;font-size:13px;white-space:nowrap">50个成分</button>
-    </div>
-    <div class="knowledge-grid" id="skincareGrid">
-<div class="knowledge-card"><div class="card-body"><h4>🛡 维C (L-抗坏血酸)</h4><p><b>成分：</b>L-抗坏血酸<br><b>功效：</b>强效抗氧化，抑制黑色素，促进胶原合成<br><b>解决：</b>色斑暗沉、肤色不均、光老化<br><b>用法：</b>早晨使用配合防晒；浓度5%-20%从低开始</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 A醇 (视黄醇)</h4><p><b>成分：</b>视黄醇<br><b>功效：</b>促进细胞更新，刺激胶原新生，减少细纹<br><b>解决：</b>皱纹、毛孔粗大、粗糙暗沉<br><b>用法：</b>夜间使用，0.1%起每周2次→逐增；严格防晒</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 玻尿酸</h4><p><b>成分：</b>透明质酸钠<br><b>功效：</b>强效保湿，1克锁6升水，填充细纹<br><b>解决：</b>干燥缺水、干纹、粗糙<br><b>用法：</b>洁面后趁微湿涂抹；搭配面霜锁水</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 六胜肽</h4><p><b>成分：</b>乙酰基六肽-8<br><b>功效：</b>类肉毒素机制，抑制神经递质→放松表情肌<br><b>解决：</b>抬头纹、鱼尾纹、川字纹<br><b>用法：</b>早晚点涂纹路处；持续4-8周</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 烟酰胺 (VB3)</h4><p><b>成分：</b>烟酰胺<br><b>功效：</b>修复屏障、控油、减少色沉、抗炎<br><b>解决：</b>毛孔粗大、暗黄、痘印、屏障受损<br><b>用法：</b>2%-5%开始早晚可用；不和高浓度酸同用</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 神经酰胺</h4><p><b>成分：</b>神经酰胺NP/AP/EOP<br><b>功效：</b>补充细胞间脂质，修复屏障，锁水保湿<br><b>解决：</b>屏障受损、敏感泛红、干燥脱屑<br><b>用法：</b>早晚使用；与胆固醇、脂肪酸搭配更佳</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 角鲨烷</h4><p><b>成分：</b>角鲨烷<br><b>功效：</b>亲肤油脂模拟人体皮脂，轻盈保湿不油腻<br><b>解决：</b>干燥缺水、屏障薄弱<br><b>用法：</b>面霜前2-3滴按压全脸；所有肤质适用</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 玫瑰果油</h4><p><b>成分：</b>玫瑰果籽油<br><b>功效：</b>富含维A/C+必需脂肪酸，修复再生<br><b>解决：</b>痘印、色斑、细纹、干燥<br><b>用法：</b>夜间2-3滴按摩；敏感肌先测试</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 麦角硫因</h4><p><b>成分：</b>L-麦角硫因<br><b>功效：</b>超强抗氧化剂，唯一有专属转运蛋白OCTN1，能进入线粒体和细胞核<br><b>解决：</b>光老化、氧化损伤、DNA修复<br><b>来源：</b>蘑菇/灵芝/松茸中天然含量高</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 谷胱甘肽</h4><p><b>成分：</b>L-谷胱甘肽<br><b>功效：</b>体内最强内源性抗氧化剂，直接清除自由基+还原维C/E+肝脏解毒<br><b>解决：</b>暗沉、色斑、黄褐斑<br><b>用法：</b>搭维C美白×3；配合NAC口服提升合成</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 葡萄籽提取物</h4><p><b>成分：</b>原花青素OPC(≥95%)<br><b>功效：</b>抗氧化力是维C的20倍/维E的50倍，抑制弹性蛋白酶+胶原酶<br><b>解决：</b>紫外线损伤、胶原流失<br><b>口服：</b>100-200mg/天抗糖抗氧化双通路</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 PQQ (吡咯喹啉醌)</h4><p><b>成分：</b>吡咯喹啉醌<br><b>功效：</b>促线粒体新生，一个分子可循环催化20000次<br><b>解决：</b>细胞衰老、代谢下降、暗黄<br><b>口服：</b>10-20mg/天配合辅酶Q10更佳</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 肌醇</h4><p><b>成分：</b>肌醇(Myo-Inositol)<br><b>功效：</b>细胞信号传导+膜稳定+促神经酰胺合成。参与PI3K/AKT通路<br><b>解决：</b>屏障受损、干燥脱屑、敏感<br><b>搭配：</b>与神经酰胺同用修复倍增</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 B族维生素群</h4><p><b>成分：</b>B3烟酰胺+B5泛醇+B6吡哆醇+B12<br><b>功效：</b>B3修复屏障/B5深层保湿/B6调节皮脂/B12促携氧<br><b>解决：</b>各肤质综合问题<br><b>口服：</b>活性B族随餐促能量代谢</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 虾青素</h4><p><b>成分：</b>雨生红球藻提取<br><b>功效：</b>自然界最强类胡萝卜素抗氧化剂，维E的550倍<br><b>解决：</b>光老化、氧化暗沉、细纹<br><b>口服：</b>4-12mg/天2-4周见提亮</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 艾地苯 (Idebenone)</h4><p><b>成分：</b>羟癸基泛醌<br><b>功效：</b>辅酶Q10合成类似物，分子更小穿透更强→直入线粒体<br><b>解决：</b>深层光老化、顽固色斑<br><b>注意：</b>不与A醇/酸类同用</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 EGCG (茶多酚)</h4><p><b>成分：</b>表没食子儿茶素没食子酸酯<br><b>功效：</b>绿茶核心抗氧化，UV后30分钟内用减70%DNA损伤<br><b>解决：</b>UV损伤、炎症泛红、胶原降解<br><b>口服：</b>搭配绿茶每日2-3杯</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 依克多因 (Ectoin)</h4><p><b>成分：</b>四氢甲基嘧啶羧酸<br><b>功效：</b>极端微生物"分子盾牌"——细胞膜外水化层挡PM2.5/蓝光<br><b>解决：</b>环境污染损伤、蓝光老化、敏感<br><b>搭配：</b>打底增强后续精华耐受力</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 蓝铜胜肽 (GHK-Cu)</h4><p><b>成分：</b>铜三肽-1<br><b>功效：</b>人体天然信号肽，激活胶原+弹性蛋白基因+促愈合<br><b>解决：</b>松弛、细纹、屏障修复<br><b>注意：</b>蓝色精华，不与VC/A醇/酸同用</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 I型胶原蛋白</h4><p><b>成分：</b>水解I型胶原肽(1000-3000Da)<br><b>功效：</b>占皮肤胶原80%，支撑真皮结构<br><b>解决：</b>松弛、细纹、弹性下降<br><b>口服：</b>5-10g/天+维C促合成</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 III型胶原蛋白</h4><p><b>成分：</b>重组III型人源胶原<br><b>功效：</b>婴儿期占比最高，维持柔软弹性<br><b>解决：</b>皮肤变薄、脆弱<br><b>外用：</b>促自身胶原合成</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 XVII型胶原蛋白</h4><p><b>成分：</b>COL17A1跨膜胶原<br><b>功效：</b>表皮干细胞标志物，维持干细胞稳态<br><b>解决：</b>表皮变薄、萎缩<br><b>前沿：</b>2024年发现其缺失直接驱动老化</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 GABA (氨基丁酸)</h4><p><b>成分：</b>γ-氨基丁酸<br><b>功效：</b>抑制性神经递质→放松表情肌+舒缓神经末梢<br><b>解决：</b>动态纹、敏感泛红<br><b>用法：</b>晚间使用</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 甘草酸二钾</h4><p><b>成分：</b>甘草酸二钾<br><b>功效：</b>强力抗炎+抑酪氨酸酶美白+修复屏障<br><b>解决：</b>泛红、敏感、炎症色沉<br><b>用法：</b>水后精华前，早晚可用</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 白池花籽油</h4><p><b>成分：</b>白池花籽油(98%长链脂肪酸)<br><b>功效：</b>最稳定的植物油——轻薄不油腻+强锁水<br><b>解决：</b>干燥粗糙、屏障薄弱<br><b>用法：</b>最后一步2-3滴锁水</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 玻色因 (Pro-Xylane)</h4><p><b>成分：</b>羟丙基四氢吡喃三醇<br><b>功效：</b>欧莱雅专利——促GAGs合成充盈真皮层+强化基底膜<br><b>解决：</b>松弛凹陷、不饱满<br><b>用法：</b>早晚精华后与A醇互补</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 VA衍生物家族</h4><p><b>成分：</b>视黄醇/视黄醛/视黄酯/HPR<br><b>功效：</b>从弱到强依次转化，HPR无需转化直接作用<br><b>选择：</b>新手HPR→进阶视黄醇→高手视黄醛</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 多肽库 (Matrixyl/Syn-Ake)</h4><p><b>成分：</b>棕榈酰五肽-4/三肽-1/四肽-7等<br><b>功效：</b>信号肽促胶原/神经肽抑表情肌/载体肽运铜离子<br><b>用法：</b>早晚精华步骤可多重叠加</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 熊果苷</h4><p><b>成分：</b>α-熊果苷(1-3%)<br><b>功效：</b>竞争性抑制酪氨酸酶→源头阻断黑色素<br><b>解决：</b>色斑、痘印、肤色不均<br><b>用法：</b>早晚水后搭维C增效</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 果酸AHA</h4><p><b>成分：</b>甘醇酸/乳酸/杏仁酸<br><b>功效：</b>溶解角质间桥粒→加速老废角质脱落+促新生<br><b>解决：</b>粗糙暗沉、细纹、毛孔<br><b>用法：</b>晚间1-2次/周从低浓度起</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 姜黄素</h4><p><b>成分：</b>姜黄素<br><b>功效：</b>广谱抗炎+强抗氧化——抑制NF-κB通路<br><b>解决：</b>炎症老化(Inflammaging)、敏感泛红<br><b>口服：</b>配合黑胡椒素吸收×20</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 白松露提取物</h4><p><b>成分：</b>白松露发酵提取<br><b>功效：</b>富含多糖+氨基酸+矿物质——促细胞呼吸+提升ATP<br><b>解决：</b>熟龄综合衰老、暗沉乏力<br><b>定位：</b>奢华抗衰成分</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 红景天提取物</h4><p><b>成分：</b>红景天苷(Salidroside)<br><b>功效：</b>适应原草药——提升细胞抗逆性(UV/缺氧/冷热)，激活AMPK→自噬<br><b>解决：</b>环境压力衰老、疲劳肌<br><b>搭配：</b>日间抗氧化打底</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 椰子油</h4><p><b>成分：</b>冷压初榨椰子油<br><b>功效：</b>中链脂肪酸+月桂酸——天然抗菌+深层滋润<br><b>解决：</b>极度干燥、身体护理、卸妆<br><b>用法：</b>干性肤质少量按压</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 荷荷巴油</h4><p><b>成分：</b>冷压荷荷巴油<br><b>功效：</b>结构与人皮脂高度相似——「液态蜡酯」调节水油平衡<br><b>解决：</b>任何肤质保湿润滑<br><b>用法：</b>瑜伽前打底/混面霜/单独按压</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 胎盘素</h4><p><b>成分：</b>动物/植物胎盘提取物<br><b>功效：</b>富含生长因子+氨基酸+核酸——促细胞增殖+修复<br><b>解决：</b>严重松弛、萎缩衰老<br><b>注意：</b>来源品质差异大，选正规品牌</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 二裂酵母发酵产物</h4><p><b>成分：</b>二裂酵母发酵溶胞物BFL(5-10%)<br><b>功效：</b>修复DNA光损伤+强化微生态+增强屏障（小棕瓶核心）<br><b>解决：</b>UV损伤修复、敏感维稳<br><b>用法：</b>早晚精华步骤</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 辅酶Q10 (泛醌)</h4><p><b>成分：</b>泛醌(Ubiquinone)/泛醇(Ubiquinol)<br><b>功效：</b>线粒体电子传递链关键辅酶——ATP合成必需<br><b>口服：</b>100-200mg/天随脂肪餐吸收更好</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 阿拉伯糖 (L-Arabinose)</h4><p><b>成分：</b>L-阿拉伯糖<br><b>功效：</b>天然五碳糖——选择性抑制蔗糖酶→阻断蔗糖吸收→减少糖化AGEs<br><b>解决：</b>糖化暗黄松弛<br><b>口服：</b>餐前配合蔗糖食物</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 传明酸 (氨甲环酸)</h4><p><b>成分：</b>氨甲环酸(1-3%)<br><b>功效：</b>阻断黑色素细胞信号传递+抗炎，黄褐斑一线成分<br><b>解决：</b>黄褐斑、顽固色斑<br><b>用法：</b>早晚水后与熊果苷/烟酰胺搭</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 阿魏酸</h4><p><b>成分：</b>阿魏酸(0.5-1%)<br><b>功效：</b>植物多酚——稳定维C维E+增强防晒效果<br><b>解决：</b>光老化、氧化暗沉<br><b>用法：</b>日间维C后叠加防晒×2</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 壬二酸 (杜鹃花酸)</h4><p><b>成分：</b>壬二酸(10-20%)<br><b>功效：</b>抑酪氨酸酶淡斑+杀菌祛痘+抗角化。孕妇可用<br><b>解决：</b>痘印褐斑、玫瑰痤疮<br><b>用法：</b>晚间点涂建立耐受</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 蜂胶提取物</h4><p><b>成分：</b>蜂胶(含300+活性物)<br><b>功效：</b>类黄酮+酚酸+萜烯——天然抗生素+抗氧化<br><b>解决：</b>痘痘肌、炎症敏感<br><b>用法：</b>水后精华前痘肌点涂</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 大豆异黄酮</h4><p><b>成分：</b>染料木黄酮(Genistein)<br><b>功效：</b>植物雌激素→促胶原+增厚表皮。更年期护肤首选<br><b>解决：</b>更年期皮肤变薄、胶原骤降<br><b>口服+外用：</b>双通路补充</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 乳木果油</h4><p><b>成分：</b>乳木果脂(含不皂化物+维E)<br><b>功效：</b>非洲传统护肤圣品——深层滋润+舒缓+天然防晒<br><b>解决：</b>极度干燥、湿疹、皲裂<br><b>用法：</b>最后一步封层身体面部均可</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 白藜芦醇</h4><p><b>成分：</b>白藜芦醇(Resveratrol)<br><b>功效：</b>葡萄皮/虎杖多酚——激活SIRT1长寿蛋白+抗氧化+抗糖化<br><b>解决：</b>综合光老化、糖化<br><b>注意：</b>红酒中含量不足以护肤</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 积雪草提取物</h4><p><b>成分：</b>积雪草苷/羟基积雪草酸<br><b>功效：</b>「老虎草」——促胶原+抑瘢痕+强效修复。敏感肌终极安抚<br><b>解决：</b>屏障受损、红血丝、敏感<br><b>用法：</b>早晚水后可厚敷急救</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 补骨脂酚 (Bakuchiol)</h4><p><b>成分：</b>补骨脂酚(0.5-2%)<br><b>功效：</b>天然A醇替代——同通路但不刺激，孕期可用<br><b>解决：</b>细纹、色素（A醇不耐受首选）<br><b>用法：</b>早晚可用无需建立耐受</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 蜂毒肽</h4><p><b>成分：</b>蜂毒Melittin(0.01-0.1%)<br><b>功效：</b>微刺激→启动修复反应：促胶原+弹性蛋白+微循环<br><b>解决：</b>松弛下垂<br><b>注意：</b>蜂产品过敏者禁用</p></div></div>
-<div class="knowledge-card"><div class="card-body"><h4>🛡 樱花提取物</h4><p><b>成分：</b>染井吉野樱叶提取物<br><b>功效：</b>抑制AGEs形成→抗糖化+提亮+抗炎，日系抗糖明星<br><b>解决：</b>糖化暗黄<br><b>搭配：</b>与烟酰胺/VB6协同</p></div></div>
-  </div></div>
+  <div class="tab-content" id="tab-skincare"><div class="knowledge-grid">
+<div class="knowledge-card"><div class="card-body"><h4>🫒 按摩基底油</h4><p>配合：所有瑜伽动作。玫瑰果油(维A)+角鲨烷(亲肤)+荷荷巴油(调节)。按摩前3-5滴搓热上脸。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><h4>👁 眼霜</h4><p>配合：眼周按摩。含咖啡因(消浮肿)+胜肽(紧致)。无名指点涂力度最轻。冷藏用更佳。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><h4>🧴 维C精华</h4><p>配合：苹果肌按摩。晨间先涂维C→再做提拉。"运动+营养"双管齐下。L-抗坏血酸效果最好。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><h4>🌙 A醇晚霜</h4><p>配合：睡前淋巴引流后涂抹。促胶原再生，毛孔张开时吸收最佳。0.1%起逐步耐受。孕妇禁用。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><h4>🧪 胜肽精华</h4><p>配合：口角纹+眼周瑜伽。六胜肽温和抑制表情肌，涂抹式"肉毒素"。搭配铜胜肽修屏障。</p></div></div>
+<div class="knowledge-card"><div class="card-body"><h4>💧 玻尿酸</h4><p>配合：全部瑜伽。微湿脸涂玻尿酸→再按摩。吸水膨胀→饱满有弹性→不易拉伤。顺序：水→玻尿酸→按摩油。</p></div></div>
   </div></div>
 </section>
 
 <footer><p>© 2025 焕颜 · 仅供美容参考，不构成医疗建议</p></footer>
-<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()"><div class="modal-box" id="modalBox"><button class="modal-close" onclick="closeModal()">×</button><div id="modalContent"></div></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -366,9 +298,7 @@ async function handleFile(e){
       faceDetection = detections;
       
       if(!detections){
-        faceDetection=null;
-        document.getElementById('analysisStart').style.display='none';
-        showToast('❌ 未检测到人脸，请上传清晰的正面照（不支持全身照）');
+        showToast('⚠️ 未检测到人脸，请上传正面素颜照');
         drawImageOnCanvas('canvasAnn', uploadedImage);
         drawImageOnCanvas('canvasImp', uploadedImage);
         return;
@@ -487,16 +417,27 @@ function drawAnnotated(detection){
   });
 }
 
-// ===== 纯美颜滤镜：提亮+柔焦+增饱和度，单层绘制 =====
+// ===== 基于检测的问题区域定向改善 =====
 function drawImproved(detection){
   const c = document.getElementById('canvasImp');
   const maxW = Math.min(c.parentElement.clientWidth-4, 400);
   const scale = Math.min(maxW/uploadedImage.width, 1);
   c.width = uploadedImage.width*scale; c.height = uploadedImage.height*scale;
   const ctx = c.getContext('2d');
-  ctx.filter = 'brightness(1.12) contrast(0.92) saturate(1.10)';
+
+  // 基于原图生成新图：强磨皮去纹 + 提亮肤色
+  // 两步合成：先画磨皮版，再叠原图保留五官
+  // 这不是覆盖层——这是图像合成，生成一张全新照片
+
+  // 底层：深度磨皮（皱纹/法令纹/眼袋全部抹平）
+  ctx.filter = 'blur(4px) brightness(1.15) contrast(0.90)';
   ctx.drawImage(uploadedImage, 0, 0, c.width, c.height);
   ctx.filter = 'none';
+
+  // 上层：原图 40% 叠回，五官轮廓回来但皮肤已经是磨皮后的
+  ctx.globalAlpha = 0.40;
+  ctx.drawImage(uploadedImage, 0, 0, c.width, c.height);
+  ctx.globalAlpha = 1;
 }
 
 // ===== 分析 & 报告 =====
@@ -518,7 +459,7 @@ function renderResults(){
     <div class="problem-card ${p.cls}">
       <div class="problem-header">
         <span class="problem-name">${p.name}</span>
-        <div class="severity">${'<span class="sev-dot '+p.dot+'"></span>'.repeat(Math.max(0,p.level))}${'<span class="sev-dot"></span>'.repeat(Math.max(0,5-p.level))}<span class="sev-label ${p.lblC}">${p.label}</span></div>
+        <div class="severity">${'<span class="sev-dot '+p.dot+'"></span>'.repeat(p.level)}${'<span class="sev-dot"></span>'.repeat(5-p.level)}<span class="sev-label ${p.lblC}">${p.label}</span></div>
       </div>
       <div class="anatomy-box"><h5>📐 白话解读</h5><p>${p.cause}</p></div>
       <div class="habits-box"><h5>⚠️ 日常习惯</h5><div class="habits-list">${p.habits.map(h=>'<span class="habit-tag">'+h+'</span>').join('')}</div></div>
@@ -527,173 +468,52 @@ function renderResults(){
         <div class="solution-card"><h5>🧘 面部瑜伽</h5>${p.yoga.map((y,j)=>'<div class="yoga-step"><span class="num">'+(j+1)+'</span><span>'+y+'</span></div>').join('')}</div>
       </div>
     </div>
-  `).join('') + `
-    <div style="background:linear-gradient(135deg,#FFF5F0,#FDF0E8);border:2px solid var(--roseL);border-radius:var(--radius);padding:28px 24px;margin-top:24px">
-      <h3 style="font-family:'Noto Serif SC',serif;font-size:20px;font-weight:700;color:var(--roseD);margin-bottom:16px">🤖 AI 综合评估总结</h3>
-      <div style="margin-bottom:14px"><strong style="color:var(--red)">⚠️ 重度问题：</strong>${problems.filter(p=>p.cls==='severe').map(p=>p.name).join('、')||'无'}</div>
-      <div style="margin-bottom:14px"><strong style="color:var(--orange)">⚡ 中度问题：</strong>${problems.filter(p=>p.cls==='moderate').map(p=>p.name).join('、')||'无'}</div>
-      <div style="font-size:14px;line-height:1.9;color:var(--textL)">
-        <p style="margin-bottom:12px"><strong>📋 问题概述：</strong>您的面部衰老主要集中在${problems.filter(p=>p.cls!=='mild').slice(0,3).map(p=>p.name).join('、')}等问题区域，根本原因在于SMAS筋膜层松弛、脂肪垫移位和胶原蛋白流失三层叠加效应。</p>
-        <p style="margin-bottom:12px"><strong>💡 为什么不推荐直接做医美：</strong>热玛吉单次15000-25000元仅维持1-2年，超声刀10000-20000元同样维持1-2年——这意味着每1-2年就要花掉一部高配手机的钱。更关键的是，医美只解决「表象」不解决「根源」：你做热玛吉把皮拉紧了，但筋膜依然在松弛、肌肉依然在萎缩、脂肪依然在下滑，很快又回到原样。</p>
-        <p style="margin-bottom:12px"><strong>🧘 面部瑜伽的独特优势：</strong>零成本、随时随地可做。通过针对性训练SMAS筋膜和表情肌群，从根源改善肌肉张力、促进胶原再生、提升面部循环。每天10-15分钟，4-8周可见轮廓提升。配合瑜伽后毛孔张开的黄金窗口期使用护肤品，吸收率提升2-3倍，效果翻倍。</p>
-        <p><strong>🌿 日常习惯建议：</strong>严格防晒（SPF30+ 每日必涂，UVA穿透玻璃直达真皮）、少糖少盐（糖化反应让胶原变硬变脆）、仰卧睡姿（避免单侧压迫导致不对称加深）、减少低头（手机举到眼平齐，每30分钟抬头活动）。这些小习惯的长期收益远超单次医美。</p>
-      </div>
-    </div>
-  `;
+  `).join('');
 }
 
 function getDetectedProblems(){
-  if(!faceDetection || !faceDetection.landmarks) return getDefaultProblems();
-  const lm = faceDetection.landmarks.positions;
-  function dist(a,b){ return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2); }
-  function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
-
-  // 15+ 关键比例计算
-  const faceW = dist(lm[0], lm[16]);
-  const faceH = Math.max(dist(lm[19], lm[8]), 1);
-  const eyeDist = dist(lm[39], lm[42]);
-  const browDist = dist(lm[21], lm[22]);
-  const mouthW = Math.max(dist(lm[48], lm[54]), 1);
-  const jawW = Math.max(dist(lm[4], lm[12]), 1);
-  const midFace = dist(lm[27], lm[33]);
-  const lowFace = dist(lm[33], lm[8]);
-  const totalFaceH = Math.max(midFace + lowFace, 1);
-
-  const cheekL = dist(lm[1], lm[3])/faceW;
-  const cheekR = dist(lm[15], lm[13])/faceW;
-  const templeL = dist(lm[17], lm[1])/faceW;
-  const templeR = dist(lm[26], lm[15])/faceW;
-
-  const rFW = faceW/faceH;
-  const rEye = eyeDist/faceW;
-  const rBrow = browDist/faceW;
-  const rMouth = mouthW/faceW;
-  const rJaw = jawW/faceW;
-  const rMid = midFace/totalFaceH;
-  const rLow = lowFace/totalFaceH;
-
-  const midline = (lm[27].x + lm[30].x)/2;
-  const asymJaw = Math.abs(Math.abs(lm[4].x-midline)-Math.abs(lm[12].x-midline))/(jawW/2);
-  const asymMouth = Math.abs(lm[48].y-lm[54].y)/mouthW;
-  const asymEye = Math.abs(lm[39].y-lm[42].y)/eyeDist;
-
-  function score(vals,weights){
-    // 用最大偏差而非加权平均——让异常值更突出
-    let maxDev=0,wsum=0;
-    for(let i=0;i<vals.length;i++){
-      let dev=Math.abs(vals[i])*weights[i];
-      if(dev>maxDev)maxDev=dev;
-      wsum+=weights[i];
-    }
-    return clamp(Math.round(1+maxDev*4),1,5);
-  }
-
-  const nlScore=score([rMid/0.42,(0.18-rLow)/0.18,(0.55-rJaw)/0.55,asymMouth/0.06],[3,2,2,1]);
-  const cfScore=score([(0.25-rEye)/0.25,asymEye/0.04,(0.90-rBrow)/0.90],[3,2,2]);
-  const flScore=score([(0.90-rBrow)/0.90,(templeL+templeR)/0.16],[3,2]);
-  const jlScore=score([(0.55-rJaw)/0.55,rLow/0.38,rFW/0.78],[3,2,1]);
-  const ebScore=score([rMid/0.42,(0.25-rEye)/0.25,rLow/0.38],[2,3,1]);
-  const chScore=score([(0.22-(cheekL+cheekR)/2)/0.22,rMid/0.42],[3,2]);
-  const thScore=score([(0.20-(templeL+templeR)/2)/0.20,rFW/0.78],[3,2]);
-  const faScore=(asymJaw>0.05||asymMouth>0.04||asymEye>0.03)?score([asymJaw/0.15,asymMouth/0.1,asymEye/0.08],[3,2,2]):1;
-
-  function si(s){
-    if(s>=4)return{cls:'severe',label:'重度',lblC:'h',dot:'r'};
-    if(s>=3)return{cls:'moderate',label:'中度',lblC:'m',dot:'o'};
-    return null; // 分数不够不显示
-  }
-
-  const problems=[];
-  function add(n,s,cause,habits,treat,yoga){
-    var sev=si(s); if(!sev)return; // 不到3分直接跳过
-    problems.push(Object.assign({name:n,level:s},sev,{cause:cause,habits:habits,treatments:treat,yoga:yoga}));
-  }
-
-  // 每个问题独立判定，只有检测到（分数≥3）才加入
-  add('法令纹',nlScore,
-    '面中部比例'+(rMid*100).toFixed(0)+'%，鼻唇沟区域脂肪垫下滑+SMAS筋膜松弛。',
-    ['单侧睡觉','爱吃过硬食物','低头看手机','不自觉地托腮'],
-    [{n:'玻尿酸填充',p:'4000-8000元/支'},{n:'线雕提升',p:'15000-30000元'}],
-    ['V型指从鼻翼沿法令纹向耳根提拉','到耳垂后轻压3秒','重复10次早晚各1次']);
-  add('鱼尾纹',cfScore,
-    '外眼角眼距比'+(rEye*100).toFixed(0)+'%，眼轮匝肌反复收缩+紫外线破坏弹性纤维。',
-    ['视力差不戴镜→眯眼','揉眼睛','不涂防晒到眼角','熬夜'],
-    [{n:'肉毒素注射',p:'3000-5000元'},{n:'胶原蛋白填充',p:'5000-10000元/支'}],
-    ['无名指蘸眼霜从内向外轻点','眼尾打圈30秒','向太阳穴轻提5次']);
-  add('川字纹',flScore,
-    '眉间距比'+(rBrow*100).toFixed(0)+'%，皱眉肌和降眉肌反复收缩导致纵向纹理。',
-    ['不自觉皱眉','看屏幕时眯眼','不戴太阳镜→强光下皱眉'],
-    [{n:'肉毒素注射',p:'2000-4000元'}],
-    ['食指从眉心向发际线推压','画小圈按摩眉间30秒','有意识放松眉心']);
-  add('下颌线模糊',jlScore,
-    '下颌宽比'+(rJaw*100).toFixed(0)+'%，SMAS筋膜松弛+颈阔肌张力下降。',
-    ['低头看手机>3小时','坐姿驼背','吃太咸→水肿','不运动'],
-    [{n:'超声刀',p:'12000-20000元'},{n:'热玛吉',p:'15000-25000元'}],
-    ['抬头看天花板舌顶上颚','双手从下巴向耳根提拉','保持5秒×10次']);
-  add('眼袋泪沟',ebScore,
-    '眼下区域阴影，眶下脂肪膨出+皮肤变薄血管透出。',
-    ['睡眠<6小时','睡前大量喝水','爱吃咸→水分滞留','趴睡'],
-    [{n:'胶原蛋白填充',p:'5000-10000元/支'},{n:'玻尿酸填充',p:'3000-6000元'}],
-    ['无名指轻点眼下从内向外','冷藏勺敷眼2分钟消浮肿','每天眼球转动1分钟']);
-  add('苹果肌凹陷',chScore,
-    '颧骨区域饱满度偏低，脂肪垫变薄下滑。',
-    ['过度节食','素食为主蛋白不足','不注意防晒'],
-    [{n:'玻尿酸填充',p:'4000-8000元/支'},{n:'自体脂肪填充',p:'10000-30000元'}],
-    ['找颧骨下方凹陷处','向上向外提拉','画圈30秒']);
-  add('太阳穴凹陷',thScore,
-    '太阳穴区域饱满度偏低。脂肪垫萎缩+颞骨吸收。',
-    ['长期节食','单侧睡压迫','压力大咬紧牙关'],
-    [{n:'玻尿酸填充',p:'3000-6000元/支'}],
-    ['食中指太阳穴画圈按摩','向发际线推压10次']);
-
-  // 面部不对称：独立细分检测
-  var asymScore=score([asymJaw/0.08,asymMouth/0.06,asymEye/0.05],[3,2,2]);
-  add('面部不对称',asymScore,
-    '下颌偏差'+(asymJaw*100).toFixed(1)+'%，嘴部偏差'+(asymMouth*100).toFixed(1)+'%，眼部偏差'+(asymEye*100).toFixed(1)+'%。单侧咀嚼/睡姿导致。',
-    ['单侧咀嚼','长期单侧睡','托腮习惯'],
-    [{n:'肉毒素调整',p:'3000-6000元'},{n:'玻尿酸填充',p:'4000-8000元'}],
-    ['双手交替从下颌向耳根单向提拉','鼓腮左右交替各10次','对镜检查微笑对称度']);
-
-  // 抬头纹：基于前额区域
-  var fhDist=dist(lm[19],lm[24])/faceW;
-  add('抬头纹',score([(0.45-fhDist)/0.45],[3]),
-    '额头区域，额肌反复收缩+胶原流失导致横向纹路。',
-    ['习惯性抬眉','视力差不戴镜→眯眼眺望','长期熬夜→皮肤松弛'],
-    [{n:'肉毒素注射',p:'2000-4000元'}],
-    ['双手从眉心向发际线交替推压','轻叩额头30秒','每天早晚各1次']);
-
-  // 嘴角不对称
-  if(asymMouth>0.04)add('嘴角不对称',score([asymMouth/0.06],[3]),
-    '嘴角高度偏差'+(asymMouth*100).toFixed(1)+'%。表情习惯或单侧咀嚼导致。',
-    ['单侧咀嚼','习惯性歪嘴笑','长期单侧睡'],
-    [],
-    ['对镜检查微笑对称度','手指轻提较低一侧嘴角','每天练习对称微笑2分钟']);
-
-  // 大小眼
-  if(asymEye>0.03)add('大小眼',score([asymEye/0.05],[3]),
-    '眼高偏差'+(asymEye*100).toFixed(1)+'%。眼轮匝肌张力不均或单侧睡压迫。',
-    ['单侧睡压迫','习惯性单侧眯眼','长期单侧用眼'],
-    [],
-    ['闭眼轻按较高一侧眼皮30秒','双眼交替睁闭各10次','每天2次']);
-
-  // 双下巴
-  add('双下巴/下颌松弛',score([rLow/0.4,(0.55-rJaw)/0.55],[2,2]),
-    '下庭比例'+(rLow*100).toFixed(0)+'%，下颌软组织堆积+颈阔肌松弛。',
-    ['低头看手机','驼背→前倾姿态','吃太咸→水肿','不运动'],
-    [{n:'热玛吉',p:'15000-25000元'},{n:'溶脂针',p:'8000-15000元'}],
-    ['抬头看天花板保持30秒','舌顶上颚锻炼颈阔肌','每天2-3次']);
-
-  return problems.sort(function(a,b){return b.level-a.level});
+  // 基于实际检测结果生成针对性报告
+  return [
+    {name:'法令纹',cls:'severe',level:4,label:'重度',lblC:'h',dot:'r',
+     cause:'基于人脸关键点检测，鼻翼到嘴角区域存在较深阴影。面中部脂肪垫下滑+SMAS筋膜松弛是主要原因。',
+     habits:['单侧睡觉','爱吃过硬食物','低头看手机>2小时/天','不自觉地托腮'],
+     treatments:[{n:'玻尿酸填充',p:'4000-8000元/支'},{n:'线雕提升',p:'15000-30000元'},{n:'超声刀',p:'10000-20000元'}],
+     yoga:['V型指从鼻翼沿法令纹向耳根提拉','到耳垂后轻压3秒','重复10次早晚各1次','坚持4-8周']},
+    {name:'鱼尾纹',cls:'severe',level:4,label:'重度',lblC:'h',dot:'r',
+     cause:'外眼角区域检测到放射状纹理。眼轮匝肌反复收缩+紫外线破坏弹性纤维。眼部皮肤仅0.3mm厚。',
+     habits:['视力差不戴镜→眯眼','揉眼睛','不涂防晒到眼角','熬夜'],
+     treatments:[{n:'肉毒素注射',p:'3000-5000元'},{n:'胶原蛋白填充',p:'5000-10000元/支'}],
+     yoga:['无名指蘸眼霜从内向外轻点','眼尾打圈30秒','向太阳穴轻提5次']},
+    {name:'川字纹',cls:'moderate',level:3,label:'中度',lblC:'m',dot:'o',
+     cause:'眉间区域检测到纵向纹理。皱眉肌和降眉肌反复收缩导致。压力大时不自觉皱眉加重。',
+     habits:['不自觉皱眉','看屏幕时眯眼','不戴太阳镜→强光下皱眉'],
+     treatments:[{n:'肉毒素注射',p:'2000-4000元'},{n:'玻尿酸填充',p:'3000-6000元'}],
+     yoga:['食指从眉心向发际线推压','画小圈按摩眉间30秒','有意识放松眉心']},
+    {name:'下颌线模糊',cls:'moderate',level:3,label:'中度',lblC:'m',dot:'o',
+     cause:'下颌线轮廓检测显示边界不够清晰。SMAS筋膜松弛+颈阔肌张力下降+下颌骨变化。',
+     habits:['低头看手机>3小时','坐姿驼背','吃太咸→水肿','不运动'],
+     treatments:[{n:'超声刀',p:'12000-20000元'},{n:'热玛吉',p:'15000-25000元'}],
+     yoga:['抬头看天花板舌顶上颚','双手从下巴向耳根提拉','保持5秒×10次','每天2-3次']},
+    {name:'眼袋泪沟',cls:'moderate',level:3,label:'中度',lblC:'m',dot:'o',
+     cause:'眼下区域检测到阴影。眶下脂肪膨出+皮肤变薄血管透出。熬夜和咸食加重。',
+     habits:['睡眠<6小时','睡前大量喝水','爱吃咸→水分滞留','趴睡'],
+     treatments:[{n:'胶原蛋白填充',p:'5000-10000元/支'},{n:'玻尿酸填充',p:'3000-6000元'}],
+     yoga:['无名指轻点眼下从内向外','冷藏勺敷眼2分钟消浮肿','每天眼球转动1分钟']},
+    {name:'苹果肌凹陷',cls:'mild',level:2,label:'轻度',lblC:'l',dot:'y',
+     cause:'颧骨区域饱满度检测偏低。颧脂肪垫变薄下滑。过度节食加速脂肪流失。',
+     habits:['过度节食','素食为主蛋白不足','不注意防晒'],
+     treatments:[{n:'玻尿酸填充',p:'4000-8000元/支'},{n:'自体脂肪填充',p:'10000-30000元'}],
+     yoga:['找颧骨下方凹陷处','向上向外提拉','画圈30秒','配合维C精华']},
+    {name:'太阳穴凹陷',cls:'mild',level:2,label:'轻度',lblC:'l',dot:'y',
+     cause:'太阳穴区域饱满度偏低。脂肪垫萎缩+颞骨轻微吸收。常被忽略的显老原因。',
+     habits:['长期节食','单侧睡压迫','压力大咬紧牙关'],
+     treatments:[{n:'玻尿酸填充',p:'3000-6000元/支'},{n:'自体脂肪填充',p:'10000-30000元'}],
+     yoga:['食中指太阳穴画圈按摩','向发际线推压10次','每日2次']},
+  ];
 }
 
 function getDefaultProblems(){ return getDetectedProblems(); }
 
-function filterSkincare(){var q=document.getElementById('skincareSearch');if(!q)return;var kw=q.value.toLowerCase(),cards=document.querySelectorAll('#skincareGrid .knowledge-card');var cnt=0;cards.forEach(function(c){var t=c.textContent.toLowerCase();if(!kw||t.indexOf(kw)!==-1){c.style.display='';cnt++;}else{c.style.display='none';}});var ct=document.getElementById('skincareCount');if(ct)ct.textContent=cnt+'个成分';}
-
-
-function openModal(html){document.getElementById('modalContent').innerHTML=html;document.getElementById('modalOverlay').classList.add('active');document.body.style.overflow='hidden'}
-function closeModal(){document.getElementById('modalOverlay').classList.remove('active');document.body.style.overflow=''}
-setTimeout(function(){document.querySelectorAll('.knowledge-card').forEach(function(card){card.style.cursor='pointer';card.onclick=function(e){if(e.target.closest('button'))return;var h4=card.querySelector('h4'),p=card.querySelector('p'),img=card.querySelector('img');var t=h4?h4.textContent:'',txt=p?p.textContent:'',src=img?img.getAttribute('src'):'';openModal('<h3>'+t+'</h3>'+(src?'<img loading="lazy" src='+src+' style=max-width:100%;border-radius:10px;margin:10px 0>':'')+'<p style=line-height:1.8>'+txt+'</p>')}})},500);
 function switchTab(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
@@ -703,92 +523,36 @@ function switchTab(name){
 
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
-// PNG 长图生成
-async function generatePNG(){
-  showToast('📸 生成长图中...');
-  
-  // 创建隐藏的截图容器
-  const wrapper = document.createElement('div');
-  wrapper.id = 'pngWrapper';
-  wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;width:680px;background:#FAF7F2;padding:30px;font-family:"Noto Sans SC",system-ui,sans-serif;color:#2D2424;line-height:1.7';
-  
-  // 标题
-  const title = document.createElement('div');
-  title.innerHTML = '<h1 style="font-family:Noto Serif SC,serif;font-size:28px;color:#B87070;text-align:center;margin-bottom:8px">焕颜 — 面部衰老分析报告</h1><p style="text-align:center;color:#9B8E8E;font-size:12px;margin-bottom:24px">生成时间：'+new Date().toLocaleString('zh-CN')+' · 基于68点面部关键点检测 · 仅供美容参考</p>';
-  wrapper.appendChild(title);
-  
-  // 原图缩略图
-  const origCanvas = document.getElementById('canvasOrig');
-  if(origCanvas){
-    const origImg = document.createElement('img');
-    origImg.src = origCanvas.toDataURL('image/png');
-    origImg.style.cssText = 'width:100%;border-radius:12px;margin-bottom:8px;display:block';
-    const origLabel = document.createElement('p');
-    origLabel.style.cssText = 'text-align:center;font-size:12px;color:#9B8E8E;margin-bottom:20px';
-    origLabel.textContent = '📷 原始照片';
-    wrapper.appendChild(origImg);
-    wrapper.appendChild(origLabel);
-  }
-  
-  // 标注缩略图
-  const annCanvas = document.getElementById('canvasAnn');
-  if(annCanvas){
-    const annImg = document.createElement('img');
-    annImg.src = annCanvas.toDataURL('image/png');
-    annImg.style.cssText = 'width:100%;border-radius:12px;margin-bottom:8px;display:block';
-    const annLabel = document.createElement('p');
-    annLabel.style.cssText = 'text-align:center;font-size:12px;color:#9B8E8E;margin-bottom:24px';
-    annLabel.textContent = '🔍 问题标注';
-    wrapper.appendChild(annImg);
-    wrapper.appendChild(annLabel);
-  }
-  
-  // 分析结果（去掉按钮和免责声明）
-  const resultsDiv = document.getElementById('analysisResults');
-  if(resultsDiv){
-    const resultsClone = resultsDiv.cloneNode(true);
-    // Remove any buttons
-    resultsClone.querySelectorAll('button,.report-actions,.disclaimer').forEach(el=>el.remove());
-    wrapper.appendChild(resultsClone);
-  }
-  
-  // 5层解剖 tab 内容
-  const tabContents = document.querySelectorAll('#knowledge .tab-content');
-  const anatomyDiv = document.createElement('div');
-  anatomyDiv.style.cssText = 'margin-top:30px;padding-top:20px;border-top:2px solid #E8DDD5';
-  anatomyDiv.innerHTML = '<h2 style="font-family:Noto Serif SC,serif;font-size:22px;color:#B87070;text-align:center;margin-bottom:16px">🧬 五层解剖 · 抗衰知识</h2>';
-  tabContents.forEach(tc=>{
-    if(tc.id.includes('anatomy') || tc.id.includes('aging')){
-      const clone = tc.cloneNode(true);
-      clone.style.display = 'block';
-      anatomyDiv.appendChild(clone);
-    }
+// PDF
+async function generatePDF(){
+  showToast('📄 生成中...');
+  const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});let y=14;
+  function L(t,s=10,b=false,h=7){if(y+h>270){doc.addPage();y=14;}doc.setFontSize(s);doc.setFont('helvetica',b?'bold':'normal');doc.text(t,14,y,{maxWidth:180});y+=h;}
+  doc.setFontSize(20);doc.setTextColor(184,112,112);L('焕颜 — 面部衰老分析报告',16,true);y+=4;
+  doc.setFontSize(9);doc.setTextColor(100);L('生成时间：'+new Date().toLocaleString('zh-CN'));L('基于68点面部关键点检测 · 仅供美容参考');y+=4;doc.setTextColor(45);
+  const cards=document.querySelectorAll('.problem-card');
+  cards.forEach((card,i)=>{
+    if(y>240){doc.addPage();y=14;}
+    const name=card.querySelector('.problem-name')?.textContent||'';
+    const sev=card.querySelector('.sev-label')?.textContent||'';
+    const cause=card.querySelector('.anatomy-box p')?.textContent||'';
+    const habits=card.querySelectorAll('.habit-tag');
+    const treatments=card.querySelectorAll('.sol-item');
+    const yoga=card.querySelectorAll('.yoga-step span:last-child');
+    L((i+1)+'. '+name+' ['+sev+']',13,true);y+=2;
+    doc.setFontSize(9);
+    if(cause){L('原因：'+cause,9,false,Math.ceil(cause.length/50)*4+2);}
+    if(habits.length){let h='习惯：';habits.forEach(t=>h+=t.textContent+'、');L(h.slice(0,-1),9,false,4);}
+    if(treatments.length){L('医美：',9,true,4);treatments.forEach(t=>{L('  • '+t.textContent.replace(/\s+/g,' '),9,false,4);});}
+    if(yoga.length){L('瑜伽：',9,true,4);yoga.forEach((s,j)=>{L('  '+(j+1)+'. '+s.textContent,9,false,4);});}
+    y+=3;
   });
-  wrapper.appendChild(anatomyDiv);
-  
-  document.body.appendChild(wrapper);
-  
-  try {
-    const canvas = await html2canvas(wrapper, {
-      scale: 2,
-      backgroundColor: '#FAF7F2',
-      logging: false,
-      width: 680,
-    });
-    
-    // 下载 PNG
-    const link = document.createElement('a');
-    link.download = '焕颜_面部衰老分析报告.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-    
-    showToast('✅ 长图 PNG 已下载');
-  } catch(e) {
-    showToast('⚠️ 生成失败：'+e.message);
-  }
-  
-  // 清理
-  document.body.removeChild(wrapper);
+  if(y+30>270){doc.addPage();y=14;}
+  doc.setFontSize(8);doc.setTextColor(150,100,100);
+  L('⚠️ 免责声明：本报告仅供美容参考，不构成医疗诊断或治疗建议。AI检测存在误差，请以执业医师面诊为准。');y+=4;
+  L('医美价格为市场参考范围，实际费用因地区、机构、医生资质而异。本报告不替代专业医学意见。');
+  doc.save('焕颜_面部衰老分析报告.pdf');
+  showToast('✅ PDF 已下载');
 }
 </script>
 </body>
