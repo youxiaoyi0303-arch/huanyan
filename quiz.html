@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>星耀主播违规培训考试</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;background:#f0f2f5;color:#333;line-height:1.6}
+.container{max-width:800px;margin:0 auto;padding:20px}
+.header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:30px 20px;border-radius:12px;text-align:center;margin-bottom:20px}
+.header h1{font-size:24px;margin-bottom:8px}
+.header .sub{font-size:14px;opacity:.9}
+.quiz-card{background:#fff;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.quiz-num{display:inline-block;background:#667eea;color:#fff;width:28px;height:28px;line-height:28px;text-align:center;border-radius:50%;font-size:13px;font-weight:700;margin-right:8px;flex-shrink:0}
+.quiz-q{font-size:16px;font-weight:600;margin-bottom:12px;display:flex;align-items:flex-start}
+.quiz-q .multi-badge{background:#ff6b6b;color:#fff;font-size:11px;padding:2px 6px;border-radius:4px;margin-left:8px;white-space:nowrap}
+.option-label{display:block;padding:10px 14px;margin:6px 0;border:1.5px solid #e8e8e8;border-radius:8px;cursor:pointer;transition:all .2s;font-size:15px}
+.option-label:hover{border-color:#667eea;background:#f8f9ff}
+.option-label input{margin-right:8px;accent-color:#667eea}
+.option-label.selected{border-color:#667eea;background:#eef0ff}
+.option-label.correct-answer{border-color:#52c41a!important;background:#f6ffed!important}
+.option-label.wrong-answer{border-color:#ff4d4f!important;background:#fff2f0!important}
+.option-label.user-wrong{border-color:#ff4d4f!important;background:#fff2f0!important}
+.submit-wrap{text-align:center;margin:30px 0}
+.btn-submit{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:14px 60px;font-size:18px;border-radius:30px;cursor:pointer;font-weight:700;transition:transform .2s,box-shadow .2s}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(102,126,234,.4)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.result{display:none;background:#fff;border-radius:12px;padding:30px;margin:20px 0;box-shadow:0 2px 12px rgba(0,0,0,.08);text-align:center}
+.result .score{font-size:48px;font-weight:800;margin:10px 0}
+.result .pass{color:#52c41a}
+.result .fail{color:#ff4d4f}
+.result .detail{margin-top:16px;font-size:14px;color:#666}
+.wrong-list{display:none;background:#fff;border-radius:12px;padding:24px;margin:20px 0;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.wrong-list h3{color:#ff4d4f;margin-bottom:16px;font-size:18px}
+.wrong-item{background:#fff7f7;border-left:3px solid #ff4d4f;padding:12px 16px;margin:10px 0;border-radius:4px}
+.wrong-item .q-text{font-weight:600;margin-bottom:6px}
+.wrong-item .your{color:#ff4d4f;font-size:13px}
+.wrong-item .correct{color:#52c41a;font-size:13px}
+.progress-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#667eea,#764ba2);transition:width .3s;z-index:999}
+.unanswered{background:#fffbe6!important;border-color:#faad14!important}
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="container">
+<div class="header">
+<h1>📋 星耀主播违规培训考试</h1>
+<div class="sub">50题 · 满分100分 · 80分及格 · 45单选 + 5多选</div>
+</div>
+<div id="quizContainer"></div>
+<div class="submit-wrap"><button class="btn-submit" onclick="submitExam()">📝 提交答卷</button></div>
+<div class="result" id="resultBox">
+<h2 id="resultTitle"></h2>
+<div class="score" id="scoreDisplay"></div>
+<div class="detail" id="scoreDetail"></div>
+</div>
+<div class="wrong-list" id="wrongList"></div>
+</div>
+
+<script>
+// ========== 题库（50题）==========
+var questions = [
+{id:1,type:"single",question:"在直播中宣传某款塑身衣「穿上立马显瘦10斤」，该行为属于什么违规类型？",options:["A. 功效虚假","B. 特殊功效虚假","C. 效果保证","D. 涉医功效虚假"],answer:"B"},
+{id:2,type:"single",question:"以下哪句话在直播间属于「特殊功效虚假」违规？",options:["A. 这件衣服面料很柔软","B. 这个精油用了能让你的胸从A杯变C杯","C. 今天买很划算","D. 这款产品质量很好"],answer:"B"},
+{id:3,type:"single",question:"主播说「用了我家这个腰带，你也能拥有小蛮腰，肚子上的赘肉全消掉」，这违反了哪条规定？",options:["A. 诱导互动","B. 效果保证","C. 特殊功效虚假（塑形/美体类）","D. 违规买赠"],answer:"C"},
+{id:4,type:"single",question:"「黑五类」功效宣传中不包括以下哪一项？",options:["A. 减肥","B. 丰胸","C. 增高","D. 美白"],answer:"D"},
+{id:5,type:"single",question:"以下哪种反问句暗示方式属于特殊功效虚假违规？",options:["A. 你们说划算不划算？","B. 你难道不想瘦下来吗？用这款就能让你瘦！","C. 质量好不好你们自己看？","D. 颜色喜不喜欢？"],answer:"B"},
+{id:6,type:"single",question:"主播宣称某食品「吃完7天腰围减5厘米，不节食不运动」，该行为最可能被判定为？",options:["A. 功效虚假（夸大宣传）","B. 特殊功效虚假（减肥/塑形类具体数据承诺）","C. 售后服务不符","D. 诱导互动"],answer:"B"},
+{id:7,type:"single",question:"平台对「特殊功效虚假」的处罚原则通常是？",options:["A. 仅警告，不扣分","B. 轻则扣分限流，重则永久封禁直播权限","C. 只需下架商品即可","D. 仅罚款，不影响账号"],answer:"B"},
+{id:8,type:"single",question:"直播间内说「这款精华可以修复皮肤屏障，相当于去医院做光子嫩肤」，属于什么违规？",options:["A. 效果保证","B. 功效虚假","C. 涉医功效虚假","D. 违规买赠"],answer:"C"},
+{id:9,type:"single",question:"使用以下哪个暗语替代词也属于涉医功效虚假违规？",options:["A. 美容院 -> 美院","B. 医院 -> y院","C. 注射 -> biu","D. 以上都是"],answer:"D"},
+{id:10,type:"single",question:"主播说「这个药膏能治疗湿疹、皮炎，比去皮肤科还管用」，该行为涉及哪种违规？",options:["A. 功效虚假（夸大）","B. 涉医功效虚假（医疗术语+药用暗示）","C. 特殊功效虚假","D. 售后服务不符"],answer:"B"},
+{id:11,type:"single",question:"关于医疗操作描述的表述，以下哪项在直播间可以正常使用？",options:["A. 深层注射级渗透","B. 涂抹后如同做了线雕","C. 质地轻薄，涂抹顺滑","D. 相当于水光针效果"],answer:"C"},
+{id:12,type:"single",question:"在宣传护肤品时，使用「消炎」「杀菌」「抗病毒」等词汇，平台会如何判定？",options:["A. 正常功效描述，不违规","B. 涉医功效虚假，属于严重违规","C. 仅提示修改，不处罚","D. 效果保证违规"],answer:"B"},
+{id:13,type:"single",question:"某主播推销牙膏时说「这个能治好你的牙龈出血、牙周炎」，这属于？",options:["A. 普通广告宣传","B. 涉医功效虚假","C. 营养保健宣传","D. 效果使用感受分享"],answer:"B"},
+{id:14,type:"single",question:"以下哪种说法可以有效避免涉医功效虚假违规？",options:["A. 用缩小版医疗术语暗示效果","B. 只说产品滋润保湿，不承诺治疗作用","C. 用暗语替代医疗名词","D. 借用医美案例吸引顾客"],answer:"B"},
+{id:15,type:"single",question:"宣称普通化妆品「能促进血液循环、加速新陈代谢、延缓衰老」，这属于？",options:["A. 合规的功效介绍","B. 功效虚假（保健功效暗示）","C. 涉医功效虚假","D. 效果保证"],answer:"B"},
+{id:16,type:"single",question:"「护肝」「促循环」「抗衰」「排毒」等保健功效词汇，在宣传普通食品/化妆品时？",options:["A. 可自由使用","B. 需有检测报告背书方可使用","C. 属于功效虚假中禁止使用的保健功效暗示","D. 仅在详情页可使用"],answer:"C"},
+{id:17,type:"single",question:"主播说「这款面霜能解决你所有的皮肤问题：长痘、细纹、暗沉、松弛、色斑全搞定」，这属于？",options:["A. 产品全面介绍","B. 功效虚假（多问题针对性宣传）","C. 效果保证","D. 正常营销话术"],answer:"B"},
+{id:18,type:"single",question:"平台禁止的保健功效暗示类别大约有多少类？",options:["A. 10类","B. 17类","C. 27类","D. 5类"],answer:"C"},
+{id:19,type:"single",question:"某主播宣传一款普通洗发水「能根治脱发、促进毛囊再生」，此行为属于？",options:["A. 正常功能介绍","B. 功效虚假（夸大宣传+保健功效暗示）","C. 涉医功效虚假","D. 特殊功效虚假"],answer:"B"},
+{id:20,type:"single",question:"「一瓶解决8大肌肤问题」这类话术在直播间使用时，需要注意什么？",options:["A. 只要有检测报告就可以说","B. 普通化妆品不得使用此类绝对化、多问题针对性宣传","C. 标注「个人体验」即可","D. 没有任何限制"],answer:"B"},
+{id:21,type:"single",question:"以下哪个行为最可能被判定为功效虚假而非涉医功效虚假？",options:["A. 「修复受损细胞，促进胶原再生」","B. 「这个能治疗脚气」","C. 「相当于打了一针玻尿酸」","D. 「消炎镇痛效果很好」"],answer:"A"},
+{id:22,type:"single",question:"直播中说「无效全额退款，保证3天见效」，这属于什么违规类型？",options:["A. 功效虚假","B. 售后服务不符","C. 效果保证","D. 诱导互动"],answer:"C"},
+{id:23,type:"single",question:"以下哪句话不属于「效果保证」违规？",options:["A. 100%有效，没效果来找我","B. 保证让你白两个度","C. 用完之后不会反弹","D. 建议根据自身肤质选择使用"],answer:"D"},
+{id:24,type:"single",question:"主播说「这个产品绝对不会让你失望，用了必见效」，平台会如何判定？",options:["A. 正常营销用语","B. 效果保证违规，涉及绝对化承诺","C. 仅需提示修改","D. 允许，只要态度诚恳"],answer:"B"},
+{id:25,type:"single",question:"「不反弹」「根治」「彻底解决」等词汇在直播间是否可以使用？",options:["A. 可以，只要产品真的好","B. 不可以，属于效果保证类违规用词","C. 仅食品类可以使用","D. 配合检测报告可以使用"],answer:"B"},
+{id:26,type:"single",question:"某主播说「我敢用我的人格担保，这个祛斑霜你用完绝对有效」，在合规角度该行为？",options:["A. 属于个人态度表达，不违规","B. 属于效果保证违规（担保性承诺）","C. 属于涉医功效虚假","D. 属于诱导互动"],answer:"B"},
+{id:27,type:"single",question:"以下哪种表述是合规的？",options:["A. 保证使用后皮肤白一个度","B. 无效退款","C. 坚持使用有助于改善肤质","D. 100%见效，不反弹"],answer:"C"},
+{id:28,type:"single",question:"效果保证违规的核心判定要素是什么？",options:["A. 只要消费者投诉就算","B. 对产品效果做出绝对化、无条件的肯定承诺","C. 只要有退款承诺就算","D. 只要用了「保证」两个字"],answer:"B"},
+{id:29,type:"single",question:"直播间送赠品时，赠品信息必须在哪个位置展示才合规？",options:["A. 主播口播即可","B. 商品详情页（商详页）","C. 评论区置顶","D. 私信发送"],answer:"B"},
+{id:30,type:"single",question:"「关注主播并扣666，就送小样一份」这种活动是否合规？",options:["A. 合规，属于正常互动","B. 不合规，属于以互动行为为赠品条件的违规买赠","C. 合规，只要赠品在商详页展示","D. 不涉及买赠问题"],answer:"B"},
+{id:31,type:"single",question:"关于赠品的正确做法是？",options:["A. 赠品不需要在商详页展示，口头承诺即可","B. 赠品必须在商详页清晰展示，且不以互动行为为条件","C. 赠品可以随便发，不要求与描述一致","D. 赠品只需要在直播中展示一次"],answer:"B"},
+{id:32,type:"single",question:"主播说「今天下单的前100名送大礼包」，但商详页没有展示赠品信息，这属于？",options:["A. 正常促销","B. 违规买赠","C. 诱导互动","D. 效果保证"],answer:"B"},
+{id:33,type:"single",question:"「拍两件送一件，送的那件不在商详页展示」这种做法？",options:["A. 合规，口头承诺也算数","B. 不合规，赠品未在商详页展示属于违规买赠","C. 只要实际发货就合规","D. 仅限大促期间合规"],answer:"B"},
+{id:34,type:"single",question:"以下哪种买赠行为在合规范围内？",options:["A. 商详页展示的赠品与实际发货一致，且无额外互动条件","B. 口播赠品与商详页赠品不一致","C. 要求加粉丝团才送赠品","D. 赠品内容完全由主播现场决定"],answer:"A"},
+{id:35,type:"single",question:"「只剩最后3单了，再不拍就没了！」这种紧迫感话术属于什么违规？",options:["A. 效果保证","B. 功效虚假","C. 诱导互动","D. 违规买赠"],answer:"C"},
+{id:36,type:"single",question:"「点赞到10万立刻降价」「关注破5000发福利」这类话术属于？",options:["A. 正常直播互动","B. 诱导互动（权益诱导互动）","C. 违规买赠","D. 效果保证"],answer:"B"},
+{id:37,type:"single",question:"以下哪种行为不属于诱导互动违规？",options:["A. 用赠品诱导用户关注、点赞、评论","B. 制造虚假紧迫感诱导下单","C. 正常介绍产品并回答观众问题","D. 「扣1报名才能享受优惠价」"],answer:"C"},
+{id:38,type:"single",question:"「只有加入粉丝团的人才能买这个价格」这种行为？",options:["A. 合规，属于粉丝福利","B. 不合规，属于权益诱导互动违规","C. 合规，只要价格真实有优惠","D. 属于违规买赠"],answer:"B"},
+{id:39,type:"single",question:"「评论刷起来，刷得越多价格越低」属于哪种违规？",options:["A. 违规买赠","B. 诱导互动（赠品诱导+权益诱导）","C. 功效虚假","D. 售后服务不符"],answer:"B"},
+{id:40,type:"single",question:"平台对诱导互动违规的典型处罚方式是什么？",options:["A. 仅口头警告","B. 扣分、限流、限制直播权限甚至封禁","C. 不处罚，仅记录","D. 只下架商品"],answer:"B"},
+{id:41,type:"single",question:"主播承诺「7天无理由退换」，但实际要求消费者承担来回运费，这属于？",options:["A. 正常售后规则","B. 售后服务不符","C. 效果保证","D. 违规买赠"],answer:"B"},
+{id:42,type:"single",question:"直播中承诺「终身质保」，但商品详情页注明「保修1年」，平台如何判定？",options:["A. 以详情页为准，不违规","B. 售后服务不符，承诺与兑现不一致","C. 仅提醒主播注意措辞","D. 效果保证违规"],answer:"B"},
+{id:43,type:"single",question:"主播说「买了我家产品，不满意随时退，邮费我们出」，但实际退货时客服不认账，这属于？",options:["A. 客服个人问题，与主播无关","B. 售后服务不符（承诺的售后服务必须可兑现）","C. 正常售后纠纷","D. 违规买赠"],answer:"B"},
+{id:44,type:"single",question:"「假一赔十」「退一赔三」等承诺在直播间口播后，若实际无法兑现？",options:["A. 仅需向个别投诉用户兑现即可","B. 属于售后服务不符违规，平台会处罚","C. 只要没写入详情页就不算违规","D. 属于效果保证违规"],answer:"B"},
+{id:45,type:"single",question:"关于售后服务，正确的做法是？",options:["A. 直播间随便承诺，事后灵活处理","B. 承诺的售后服务必须与商品详情页一致且可兑现","C. 售后承诺不需要在详情页体现","D. 只承诺但不写进任何地方，避免被追责"],answer:"B"},
+{id:46,type:"multi",question:"（多选）以下哪些属于「特殊功效虚假」违规中禁止宣传的「黑五类」内容？",options:["A. 减肥/瘦身","B. 塑形/美体","C. 丰胸","D. 壮阳/增高"],answer:"ABCD"},
+{id:47,type:"multi",question:"（多选）以下哪些行为会被判定为「涉医功效虚假」违规？",options:["A. 使用「消炎」「杀菌」「抗病毒」等医疗术语宣传普通化妆品","B. 用暗语「y院」替代「医院」、「biu」替代「注射」","C. 宣称产品效果等同于医美项目（如光子嫩肤、水光针）","D. 描述产品成分时提及「含有玻尿酸保湿成分」"],answer:"ABC"},
+{id:48,type:"multi",question:"（多选）以下哪些话术属于「效果保证」违规？",options:["A. 「无效退款，100%见效」","B. 「保证用了一周就白」","C. 「坚持使用，肌肤状态可能有所改善」","D. 「绝对不会反弹，根治问题」"],answer:"ABD"},
+{id:49,type:"multi",question:"（多选）关于「违规买赠」，以下哪些说法是正确的？",options:["A. 赠品必须在商品详情页清晰展示","B. 不得以互动行为（关注、点赞、评论等）作为赠品发放条件","C. 口播赠品内容须与商详页展示一致","D. 赠品可随意调整，不需要与描述相符"],answer:"ABC"},
+{id:50,type:"multi",question:"（多选）以下哪些行为属于「诱导互动」违规？",options:["A. 制造虚假紧迫感话术诱导下单（如「仅剩最后3单」）","B. 赠品诱导关注、点赞、评论等行为","C. 以加入粉丝团或扣数字为享受优惠的前置条件","D. 正常介绍产品特点和使用方法"],answer:"ABC"}
+];
+
+// ====== Render Quiz ======
+var container = document.getElementById("quizContainer");
+questions.forEach(function(q, idx){
+    var card = document.createElement("div");
+    card.className = "quiz-card";
+    card.id = "qcard" + q.id;
+
+    var qDiv = document.createElement("div");
+    qDiv.className = "quiz-q";
+    qDiv.innerHTML = '<span class="quiz-num">' + q.id + '</span> ' + q.question;
+    if(q.type === "multi"){
+        qDiv.innerHTML += '<span class="multi-badge">多选</span>';
+    }
+    card.appendChild(qDiv);
+
+    var inputType = q.type === "multi" ? "checkbox" : "radio";
+    q.options.forEach(function(opt, oi){
+        var label = document.createElement("label");
+        label.className = "option-label";
+        label.id = "opt" + q.id + "_" + oi;
+        var inp = document.createElement("input");
+        inp.type = inputType;
+        inp.name = "q" + q.id;
+        inp.value = String.fromCharCode(65 + oi);
+        inp.onchange = function(){ updateProgress(); };
+        label.appendChild(inp);
+        label.appendChild(document.createTextNode(" " + opt));
+        card.appendChild(label);
+    });
+
+    container.appendChild(card);
+});
+
+// ====== Progress ======
+function updateProgress(){
+    var answered = 0;
+    questions.forEach(function(q){
+        var checked = document.querySelectorAll('input[name="q' + q.id + '"]:checked');
+        if(checked.length > 0) answered++;
+    });
+    var pct = Math.round((answered / questions.length) * 100);
+    document.getElementById("progressBar").style.width = pct + "%";
+}
+
+// ====== Submit ======
+function submitExam(){
+    var allAnswered = true;
+    questions.forEach(function(q){
+        var checked = document.querySelectorAll('input[name="q' + q.id + '"]:checked');
+        if(checked.length === 0){
+            allAnswered = false;
+            document.getElementById("qcard" + q.id).classList.add("unanswered");
+        } else {
+            document.getElementById("qcard" + q.id).classList.remove("unanswered");
+        }
+    });
+
+    if(!allAnswered){
+        var go = confirm("还有未作答的题目（黄色标记），确定要提交吗？");
+        if(!go) return;
+    }
+
+    var score = 0;
+    var wrongs = [];
+
+    questions.forEach(function(q){
+        var checked = document.querySelectorAll('input[name="q' + q.id + '"]:checked');
+        var userAnswer = "";
+        checked.forEach(function(c){ userAnswer += c.value; });
+        // Sort multi answers
+        if(q.type === "multi"){
+            userAnswer = userAnswer.split("").sort().join("");
+        }
+
+        var isCorrect = (userAnswer === q.answer);
+
+        // Highlight correct/wrong
+        q.options.forEach(function(opt, oi){
+            var label = document.getElementById("opt" + q.id + "_" + oi);
+            var letter = String.fromCharCode(65 + oi);
+            if(q.answer.indexOf(letter) >= 0){
+                label.classList.add("correct-answer");
+            }
+            if(!isCorrect && userAnswer.indexOf(letter) >= 0 && q.answer.indexOf(letter) < 0){
+                label.classList.add("user-wrong");
+            }
+        });
+
+        if(isCorrect){
+            score += 2;
+        } else {
+            wrongs.push({
+                id: q.id,
+                question: q.question,
+                userAnswer: userAnswer || "未作答",
+                correctAnswer: q.answer,
+                type: q.type
+            });
+        }
+    });
+
+    // Disable all inputs
+    document.querySelectorAll("input").forEach(function(inp){ inp.disabled = true; });
+    document.querySelector(".btn-submit").disabled = true;
+
+    // Show result
+    var resultBox = document.getElementById("resultBox");
+    var scoreDisplay = document.getElementById("scoreDisplay");
+    var resultTitle = document.getElementById("resultTitle");
+    var scoreDetail = document.getElementById("scoreDetail");
+
+    resultBox.style.display = "block";
+    scoreDisplay.textContent = score + " 分";
+    scoreDisplay.className = "score " + (score >= 80 ? "pass" : "fail");
+
+    if(score >= 80){
+        resultTitle.textContent = "🎉 恭喜通过！";
+        resultTitle.style.color = "#52c41a";
+    } else {
+        resultTitle.textContent = "😞 未通过";
+        resultTitle.style.color = "#ff4d4f";
+    }
+
+    scoreDetail.innerHTML = "答对 " + (score/2) + " 题 / 共 50 题 &nbsp;|&nbsp; 正确率 " + Math.round((score/2)/50*100) + "%" +
+        "<br>及格线：40题（80分）" + (score >= 80 ? " ✅ 达标" : " ❌ 还差 " + (40 - score/2) + " 题");
+
+    // Show wrong list
+    if(wrongs.length > 0){
+        var wrongDiv = document.getElementById("wrongList");
+        wrongDiv.style.display = "block";
+        var html = "<h3>❌ 错题回顾（" + wrongs.length + " 题）</h3>";
+        wrongs.forEach(function(w){
+            html += '<div class="wrong-item">';
+            html += '<div class="q-text">' + w.id + '. ' + w.question + '</div>';
+            html += '<div class="your">你的答案：<b>' + w.userAnswer + '</b></div>';
+            html += '<div class="correct">正确答案：<b>' + w.correctAnswer + '</b></div>';
+            html += '</div>';
+        });
+        wrongDiv.innerHTML = html;
+        wrongDiv.scrollIntoView({behavior:"smooth"});
+    }
+
+    resultBox.scrollIntoView({behavior:"smooth"});
+    updateProgress();
+}
+</script>
+</body>
+</html>
